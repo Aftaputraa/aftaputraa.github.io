@@ -67,7 +67,7 @@ class Layout {
             { tab: 'template', icon: 'document-text-outline', label: 'Template Penulisan' },
             { tab: 'final', icon: 'checkmark-done-outline', label: 'Final Assignment' },
             { tab: 'sinkronus', icon: 'videocam-outline', label: 'Sesi Sinkronus' },
-            { tab: 'attendance', icon: 'calendar-outline', label: 'Presensi Coaching' }
+            { tab: 'attendance', icon: 'calendar-outline', label: 'Presensi' }
         ];
 
         return navItems.map(item => `

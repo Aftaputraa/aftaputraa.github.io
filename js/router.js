@@ -9,7 +9,7 @@ class Router {
     constructor() {
         this.routes = {
             'dashboard': Dashboard,
-            'materi': materi,
+            'materi': Materi,
             'template': Template,
             'final': FinalAssignment,
             'sinkronus': Sinkronus,

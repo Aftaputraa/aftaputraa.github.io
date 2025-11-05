@@ -1,5 +1,5 @@
 import Dashboard from './components/Dashboard.js';
-import Materi from './components/materi.js';
+import Materi from './components/Materi.js';
 import Template from './components/Template.js';
 import FinalAssignment from './components/FinalAssignment.js';
 import Sinkronus from './components/Sinkronus.js';

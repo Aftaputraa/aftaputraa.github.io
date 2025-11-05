@@ -90,11 +90,6 @@ class Sinkronus {
                                     <h2 class="text-xl md:text-2xl font-bold text-gray-900">${currentSession.title}</h2>
                                     <p class="text-gray-600 mt-1">${currentSession.videos.length} video rekaman</p>
                                 </div>
-                                <button class="attend-session-btn bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium text-sm md:text-base whitespace-nowrap"
-                                        data-session-title="${currentSession.title}">
-                                    <ion-icon name="checkmark-circle-outline" class="mr-2"></ion-icon>
-                                    Tandai Hadir CGC
-                                </button>
                             </div>
                         </div>
 

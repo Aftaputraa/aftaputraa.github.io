@@ -42,7 +42,8 @@ class Attendance {
     static async renderLiveSessions() {
         const cgcSessions = [
             { number: 1, title: "Coaching Group Clinic #1" },
-            { number: 2, title: "Coaching Group Clinic #2" }
+            { number: 2, title: "Coaching Group Clinic #2" },
+            { number: 2, title: "Coaching Group Clinic #3" }
         ];
 
         const currentAttendance = {};

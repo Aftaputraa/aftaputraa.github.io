@@ -10,6 +10,12 @@ class Attendance {
             return '<div class="p-8 text-center text-red-600">Silakan login terlebih dahulu</div>';
         }
 
+        const cgcSessions = [
+            { number: 1, title: "Coaching Group Clinic #1" },
+            { number: 2, title: "Coaching Group Clinic #2" },
+            { number: 3, title: "Coaching Group Clinic #3" }
+        ];
+
         return `
             <div class="max-w-6xl mx-auto">
                 <div class="bg-white shadow-lg rounded-xl md:rounded-2xl overflow-hidden">
@@ -21,31 +27,21 @@ class Attendance {
                     <div class="border-b border-gray-200 bg-gray-50">
                         <div class="flex overflow-x-auto">
                             <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 ${this.activeTab === 'live-sessions' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600 border-transparent hover:bg-white hover:text-blue-600'}" 
-                                    data-tab="live-sessions">
-                                Presensi Live Session
-                            </button>
+                                    data-tab="live-sessions">Presensi Live Session</button>
                             <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 ${this.activeTab === 'e-course' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600 border-transparent hover:bg-white hover:text-blue-600'}" 
-                                    data-tab="e-course">
-                                Penyelesaian E-Course
-                            </button>
+                                    data-tab="e-course">Penyelesaian E-Course</button>
                         </div>
                     </div>
                     
                     <div class="p-4 md:p-6">
-                        ${this.activeTab === 'live-sessions' ? await this.renderLiveSessions() : await this.renderECourse()}
+                        ${this.activeTab === 'live-sessions' ? await this.renderLiveSessions(cgcSessions) : await this.renderECourse()}
                     </div>
                 </div>
             </div>
         `;
     }
 
-    static async renderLiveSessions() {
-        const cgcSessions = [
-            { number: 1, title: "Coaching Group Clinic #1" },
-            { number: 2, title: "Coaching Group Clinic #2" },
-            { number: 2, title: "Coaching Group Clinic #3" }
-        ];
-
+    static async renderLiveSessions(cgcSessions) {
         const currentAttendance = {};
         for (const session of cgcSessions) {
             currentAttendance[session.number] = await this.auth.hasAttendedSession(session.number);
@@ -55,18 +51,14 @@ class Attendance {
             <div class="space-y-6">
                 <h2 class="text-xl font-bold text-gray-900 mb-4">Form Presensi Live Session</h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     ${cgcSessions.map(session => {
                         const hasAttended = currentAttendance[session.number];
                         return `
                         <div class="bg-white border ${hasAttended ? 'border-green-200' : 'border-gray-200'} rounded-xl p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="font-semibold text-gray-900 text-lg">${session.title}</h3>
-                                ${hasAttended ? `
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        ✓ Hadir
-                                    </span>
-                                ` : ''}
+                                ${hasAttended ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">✓ Hadir</span>' : ''}
                             </div>
                             
                             ${hasAttended ? `
@@ -105,7 +97,6 @@ class Attendance {
     static async renderAttendanceHistory() {
         try {
             const attendance = await this.auth.getSessionAttendance();
-            
             if (!attendance || attendance.length === 0) {
                 return '<div class="text-center py-8 bg-gray-50 rounded-xl"><p class="text-gray-500">Belum ada riwayat presensi</p></div>';
             }
@@ -139,7 +130,6 @@ class Attendance {
                 </div>
             `;
         } catch (error) {
-            console.error('Render attendance history error:', error);
             return '<p class="text-red-600">Error loading attendance history</p>';
         }
     }
@@ -201,53 +191,36 @@ class Attendance {
                             `;
                         }).join('')}
                     </div>
-
                 </div>
             `;
         } catch (error) {
-            console.error('Render e-course error:', error);
             return '<p class="text-red-600">Error loading e-course progress</p>';
         }
     }
 
-    static async renderProgressStats() {
-        try {
-            const stats = await this.auth.getProgressStats();
-            
-            return `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div class="bg-white rounded-lg p-4 border border-blue-200">
-                        <div class="text-2xl font-bold text-blue-600">${stats.completedCourses}</div>
-                        <div class="text-sm text-gray-600">Course Selesai</div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 border border-green-200">
-                        <div class="text-2xl font-bold text-green-600">${stats.totalCourses}</div>
-                        <div class="text-sm text-gray-600">Total Course</div>
-                    </div>
-                    <div class="bg-white rounded-lg p-4 border border-purple-200">
-                        <div class="text-2xl font-bold text-purple-600">${stats.percentage}%</div>
-                        <div class="text-sm text-gray-600">Progress Total</div>
-                    </div>
-                </div>
-            `;
-        } catch (error) {
-            console.error('Render progress stats error:', error);
-            return '<p class="text-red-600">Error loading progress stats</p>';
-        }
-    }
-
     static async init() {
-        this.setupTabNavigation();
-        this.setupLiveSessionHandlers();
-        this.setupECourseHandlers();
-    }
-
-    static setupTabNavigation() {
         document.addEventListener('click', (e) => {
             if (e.target.closest('.tab-button')) {
-                const tabButton = e.target.closest('.tab-button');
-                const tabName = tabButton.dataset.tab;
+                const tabName = e.target.closest('.tab-button').dataset.tab;
                 this.switchTab(tabName);
+            }
+            
+            if (e.target.closest('.save-attendance')) {
+                const button = e.target.closest('.save-attendance');
+                const sessionNumber = parseInt(button.dataset.sessionNumber);
+                const sessionTitle = button.dataset.sessionTitle;
+                const selectedOption = document.querySelector(`input[name="attendance-${sessionNumber}"]:checked`);
+                
+                if (!selectedOption) {
+                    this.showNotification('Pilih status kehadiran terlebih dahulu!', 'error');
+                    return;
+                }
+                this.recordAttendance(sessionNumber, sessionTitle, selectedOption.value === 'hadir');
+            }
+            
+            if (e.target.closest('.save-progress')) {
+                const button = e.target.closest('.save-progress');
+                this.saveWeekProgress(parseInt(button.dataset.week));
             }
         });
     }
@@ -259,44 +232,12 @@ class Attendance {
         await this.init();
     }
 
-    static setupLiveSessionHandlers() {
-        document.addEventListener('click', async (e) => {
-            if (e.target.closest('.save-attendance')) {
-                const button = e.target.closest('.save-attendance');
-                const sessionNumber = parseInt(button.dataset.sessionNumber);
-                const sessionTitle = button.dataset.sessionTitle;
-                
-                const selectedOption = document.querySelector(`input[name="attendance-${sessionNumber}"]:checked`);
-                
-                if (!selectedOption) {
-                    this.showNotification('Pilih status kehadiran terlebih dahulu!', 'error');
-                    return;
-                }
-
-                const attended = selectedOption.value === 'hadir';
-                await this.recordAttendance(sessionNumber, sessionTitle, attended);
-            }
-        });
-    }
-
-    static setupECourseHandlers() {
-        document.addEventListener('click', async (e) => {
-            if (e.target.closest('.save-progress')) {
-                const button = e.target.closest('.save-progress');
-                const weekNumber = parseInt(button.dataset.week);
-                await this.saveWeekProgress(weekNumber);
-            }
-        });
-    }
-
     static async recordAttendance(sessionNumber, sessionTitle, attended) {
         try {
             await this.auth.recordSessionAttendance(sessionNumber, sessionTitle, attended);
-            const status = attended ? 'Hadir' : 'Tidak Hadir';
-            this.showNotification(`Presensi untuk ${sessionTitle}: ${status} berhasil dicatat!`, 'success');
+            this.showNotification(`Presensi untuk ${sessionTitle} berhasil dicatat!`, 'success');
             await this.switchTab('live-sessions');
         } catch (error) {
-            console.error('Attendance error:', error);
             this.showNotification('Gagal mencatat presensi. Coba lagi.', 'error');
         }
     }
@@ -307,7 +248,7 @@ class Attendance {
             const completedCourses = Array.from(checkboxes).map(cb => cb.dataset.course);
             
             if (completedCourses.length === 0) {
-                this.showNotification('Pilih minimal satu course yang sudah diselesaikan!', 'error');
+                this.showNotification('Pilih minimal satu course!', 'error');
                 return;
             }
 
@@ -317,9 +258,7 @@ class Attendance {
 
             this.showNotification(`Progress pekan ${weekNumber} berhasil disimpan!`, 'success');
             await this.switchTab('e-course');
-            
         } catch (error) {
-            console.error('Progress save error:', error);
             this.showNotification('Gagal menyimpan progress. Coba lagi.', 'error');
         }
     }
@@ -331,13 +270,7 @@ class Attendance {
             type === 'error' ? 'bg-red-500 text-white' :
             'bg-blue-500 text-white'
         }`;
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <ion-icon name="${type === 'success' ? 'checkmark-circle' : type === 'error' ? 'close-circle' : 'information-circle'}" class="mr-2"></ion-icon>
-                <span>${message}</span>
-            </div>
-        `;
-        
+        notification.innerHTML = `<div class="flex items-center"><span>${message}</span></div>`;
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 4000);
     }

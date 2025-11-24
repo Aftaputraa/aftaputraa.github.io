@@ -3,6 +3,7 @@ import { sessionAttendanceService } from '../config/supabase.js';
 class Sinkronus {
     static currentTab = 'coaching_clinic_1';
     static currentVideoIndex = 0;
+    static isInitialized = false;
 
     static async render() {
         // Data sessions - hanya disimpan sekali
@@ -44,7 +45,13 @@ class Sinkronus {
             coaching_clinic_3: {
                 title: "Coaching Group Clinic #3",
                 videos: [
-                    { title: "Sesi Menyusul", youtube_url: "https://www.youtube.com/embed/placeholder" }
+                    { title: "Materi Pengantar", youtube_url: "https://www.youtube.com/embed/6nSlX5ptv_k" },
+                    { title: "Tutorial SLR: Menentukan Keyword, Penggunaan Watase sampai Prisma", youtube_url: "https://www.youtube.com/embed/xyP4nFAeprU" },
+                    { title: "Membuat Tabel Review & Sintesis", youtube_url: "https://www.youtube.com/embed/ggJF-zI-Kzk" },
+                    { title: "Tutorial SLR: Menulis Artikel Jurnal dengan Bantuan ChatGPT", youtube_url: "https://www.youtube.com/embed/UQWFBvuuo1k" },
+                    { title: "Target Jurnal dan Template Publikasi", youtube_url: "https://www.youtube.com/embed/YjY3V2ptAiM" },
+                    { title: "Tutorial SLR: Visualisasi Bibliometrik dengan VOSviewer", youtube_url: "https://www.youtube.com/embed/1P_mHDbv6ow" },
+                    { title: "Tutorial SLR: Paradigma, Kesimpulan, hingga Proses Akhir", youtube_url: "https://www.youtube.com/embed/-tO9b81be7I" }
                 ]
             }
         };
@@ -133,8 +140,8 @@ class Sinkronus {
                                     
                                     <!-- Video Info -->
                                     <div class="p-4 md:p-6">
-                                        <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">${currentVideo.title}</h3>
-                                        <p class="text-gray-600 mb-4">${currentSession.title}</p>
+                                        <h3 id="current-video-title" class="text-lg md:text-xl font-bold text-gray-900 mb-2">${currentVideo.title}</h3>
+                                        <p id="current-session-title" class="text-gray-600 mb-4">${currentSession.title}</p>
                                         
                                         <!-- Simple Navigation -->
                                         <div class="flex gap-3">
@@ -160,18 +167,23 @@ class Sinkronus {
     }
 
     static async init() {
-        this.setupTabNavigation();
-        this.setupVideoNavigation();
-        this.setupVideoList();
-        this.setupAttendance();
+        if (!this.isInitialized) {
+            this.setupTabNavigation();
+            this.setupVideoNavigation();
+            this.setupVideoList();
+            this.setupAttendance();
+            this.isInitialized = true;
+        }
+        
+        this.updateVideoList();
+        this.updateNavigationButtons();
     }
 
     static setupTabNavigation() {
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.tab-button')) {
-                const tabButton = e.target.closest('.tab-button');
+            const tabButton = e.target.closest('.tab-button');
+            if (tabButton) {
                 const tabName = tabButton.dataset.tab;
-                
                 this.switchTab(tabName);
             }
         });
@@ -181,21 +193,27 @@ class Sinkronus {
         this.currentTab = tabName;
         this.currentVideoIndex = 0;
         
-        // Re-render the component
         const content = await this.render();
         document.getElementById('content').innerHTML = content;
         
-        // Re-initialize
-        await this.init();
+        this.updateVideoList();
+        this.updateNavigationButtons();
     }
 
     static setupVideoNavigation() {
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.prev-video')) {
+            const prevButton = e.target.closest('.prev-video');
+            const nextButton = e.target.closest('.next-video');
+            
+            if (prevButton && !prevButton.disabled) {
+                e.preventDefault();
+                e.stopPropagation();
                 this.previousVideo();
             }
             
-            if (e.target.closest('.next-video')) {
+            if (nextButton && !nextButton.disabled) {
+                e.preventDefault();
+                e.stopPropagation();
                 this.nextVideo();
             }
         });
@@ -203,10 +221,11 @@ class Sinkronus {
 
     static setupVideoList() {
         document.addEventListener('click', (e) => {
-            if (e.target.closest('.video-item')) {
-                const videoItem = e.target.closest('.video-item');
+            const videoItem = e.target.closest('.video-item');
+            if (videoItem) {
+                e.preventDefault();
+                e.stopPropagation();
                 const videoIndex = parseInt(videoItem.dataset.videoIndex);
-                
                 this.switchVideo(videoIndex);
             }
         });
@@ -228,9 +247,25 @@ class Sinkronus {
         
         // Update video player
         const sessionsData = this.getSessionsData();
-        const currentVideo = sessionsData[this.currentTab].videos[this.currentVideoIndex];
+        const currentSession = sessionsData[this.currentTab];
+        const currentVideo = currentSession.videos[this.currentVideoIndex];
         
-        document.getElementById('main-video-player').src = currentVideo.youtube_url;
+        // Update iframe source
+        const videoPlayer = document.getElementById('main-video-player');
+        if (videoPlayer) {
+            videoPlayer.src = currentVideo.youtube_url;
+        }
+        
+        // ✅ PERBAIKAN: Update judul video dan sesi
+        const videoTitleElement = document.getElementById('current-video-title');
+        const sessionTitleElement = document.getElementById('current-session-title');
+        
+        if (videoTitleElement) {
+            videoTitleElement.textContent = currentVideo.title;
+        }
+        if (sessionTitleElement) {
+            sessionTitleElement.textContent = currentSession.title;
+        }
         
         // Update video list active state
         this.updateVideoList();
@@ -254,14 +289,9 @@ class Sinkronus {
 
     static async recordAttendance(sessionTitle) {
         try {
-            // Cari atau buat session ID berdasarkan title
             const sessionId = await this.getOrCreateSession(sessionTitle);
-            
-            // Record attendance untuk seluruh sesi CGC
-            await attendanceService.recordAttendance(sessionId, `Menghadiri sesi: ${sessionTitle}`);
-            
+            await sessionAttendanceService.recordAttendance(sessionId, `Menghadiri sesi: ${sessionTitle}`);
             this.showNotification(`Kehadiran untuk "${sessionTitle}" berhasil dicatat!`, 'success');
-            
         } catch (error) {
             console.error('Attendance error:', error);
             this.showNotification('Gagal mencatat kehadiran: ' + error.message, 'error');
@@ -269,8 +299,6 @@ class Sinkronus {
     }
 
     static async getOrCreateSession(sessionTitle) {
-        // Untuk simplicity, kita gunakan hash dari title sebagai session ID
-        // Di production, Anda akan query database untuk session yang ada
         const sessionId = this.hashString(sessionTitle);
         return sessionId;
     }
@@ -303,7 +331,6 @@ class Sinkronus {
     }
 
     static getSessionsData() {
-        // Return static data
         return {
             onboarding: {
                 title: "Onboarding Kampus Riset Angkatan 1",
@@ -342,7 +369,13 @@ class Sinkronus {
             coaching_clinic_3: {
                 title: "Coaching Group Clinic #3",
                 videos: [
-                    { title: "Sesi Menyusul", youtube_url: "https://www.youtube.com/embed/placeholder" }
+                    { title: "Materi Pengantar", youtube_url: "https://www.youtube.com/embed/6nSlX5ptv_k" },
+                    { title: "Tutorial SLR: Menentukan Keyword, Penggunaan Watase sampai Prisma", youtube_url: "https://www.youtube.com/embed/xyP4nFAeprU" },
+                    { title: "Membuat Tabel Review & Sintesis", youtube_url: "https://www.youtube.com/embed/ggJF-zI-Kzk" },
+                    { title: "Tutorial SLR: Menulis Artikel Jurnal dengan Bantuan ChatGPT", youtube_url: "https://www.youtube.com/embed/UQWFBvuuo1k" },
+                    { title: "Target Jurnal dan Template Publikasi", youtube_url: "https://www.youtube.com/embed/YjY3V2ptAiM" },
+                    { title: "Tutorial SLR: Visualisasi Bibliometrik dengan VOSviewer", youtube_url: "https://www.youtube.com/embed/1P_mHDbv6ow" },
+                    { title: "Tutorial SLR: Paradigma, Kesimpulan, hingga Proses Akhir", youtube_url: "https://www.youtube.com/embed/-tO9b81be7I" }
                 ]
             }
         };

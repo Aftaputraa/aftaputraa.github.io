@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen p-6">
+
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 mb-4">Attendance Dashboard</h1>
+      
+      <!-- Search Box -->
+      <div class="relative">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search by name or email..." 
+          class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-100 border-b-2 border-gray-200">
+            <tr>
+              <th class="px-4 md:px-6 py-3 md:py-4 text-left text-xs md:text-sm font-bold text-gray-700 uppercase tracking-wider">Student</th>
+              <th class="px-3 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-gray-700 uppercase tracking-wider">Sessions</th>
+              <th class="px-3 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-gray-700 uppercase tracking-wider">Courses</th>
+              <th class="px-3 md:px-6 py-3 md:py-4 text-center text-xs md:text-sm font-bold text-gray-700 uppercase tracking-wider">Details</th>
+            </tr>
+          </thead>
+          <tbody id="user-table" class="divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- No Results -->
+    <div id="no-results" class="hidden bg-white p-12 rounded-lg shadow text-center">
+      <p class="text-gray-500 text-lg">No users found matching your search.</p>
+    </div>
+  </div>
+
+  <!-- Modal for Details -->
+  <div id="detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onclick="closeModal(event)">
+    <div class="bg-white rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+      <div class="p-6 border-b bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 id="modal-name" class="text-2xl font-bold"></h2>
+            <p id="modal-email" class="text-blue-100 mt-1"></p>
+          </div>
+          <button onclick="closeModal()" class="text-white hover:text-gray-200 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div id="modal-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ijyupykrvelhzylqidha.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqeXVweWtydmVsaHp5bHFpZGhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNjA4NjQsImV4cCI6MjA3NzgzNjg2NH0.IaBglX8hJTQTeo9zu1G7VD7-yoFAEHyWyVAzbr26zk8";
+
+    let allUsers = [];
+
+    async function supa(table, params = "") {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params}`, {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      return res.json();
+    }
+
+    async function loadData() {
+      const users = await supa("users", "?select=id,full_name,email");
+      const sessionAttendance = await supa(
+        "session_attendance",
+        "?select=id,user_id,session_number,session_title,attended,created_at"
+      );
+      const courseAttendance = await supa(
+        "course_attendance",
+        "?select=id,user_id,week_number,course_title,completed,created_at"
+      );
+
+      allUsers = users.map(user => {
+        const userSessions = sessionAttendance.filter(sa => sa.user_id === user.id);
+        const userCourses = courseAttendance.filter(ca => ca.user_id === user.id);
+        
+        return {
+          ...user,
+          sessions: userSessions.sort((a, b) => a.session_number - b.session_number),
+          courses: userCourses.sort((a, b) => a.week_number - b.week_number),
+          sessionsAttended: userSessions.filter(s => s.attended).length,
+          coursesCompleted: userCourses.filter(c => c.completed).length,
+          coursesByWeek: groupBy(userCourses, 'week_number')
+        };
+      }).sort((a, b) => {
+        // Sort by total attendance (sessions + courses) descending
+        const totalA = a.sessionsAttended + a.coursesCompleted;
+        const totalB = b.sessionsAttended + b.coursesCompleted;
+        return totalB - totalA;
+      });
+
+      renderUsers(allUsers);
+    }
+
+    function groupBy(array, key) {
+      return array.reduce((result, item) => {
+        const groupKey = item[key];
+        if (!result[groupKey]) result[groupKey] = [];
+        result[groupKey].push(item);
+        return result;
+      }, {});
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById("user-table");
+      const noResults = document.getElementById("no-results");
+      
+      if (users.length === 0) {
+        tbody.innerHTML = "";
+        document.querySelector('table').parentElement.parentElement.classList.add('hidden');
+        noResults.classList.remove("hidden");
+        return;
+      }
+      
+      document.querySelector('table').parentElement.parentElement.classList.remove('hidden');
+      noResults.classList.add("hidden");
+      
+      tbody.innerHTML = users.map(user => `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 md:px-6 py-3 md:py-4">
+            <div class="font-semibold text-sm md:text-base text-gray-800">${user.full_name || "Unnamed User"}</div>
+            <div class="text-xs md:text-sm text-gray-500 truncate">${user.email}</div>
+          </td>
+          <td class="px-3 md:px-6 py-3 md:py-4 text-center">
+            <div class="inline-flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 bg-blue-100 text-blue-700 rounded-full text-sm md:text-base font-semibold">
+              <svg class="w-4 h-4 md:w-5 md:h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>${user.sessionsAttended}</span>
+            </div>
+          </td>
+          <td class="px-3 md:px-6 py-3 md:py-4 text-center">
+            <div class="inline-flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 bg-green-100 text-green-700 rounded-full text-sm md:text-base font-semibold">
+              <svg class="w-4 h-4 md:w-5 md:h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+              <span>${user.coursesCompleted}</span>
+            </div>
+          </td>
+          <td class="px-3 md:px-6 py-3 md:py-4 text-center">
+            <button 
+              onclick='showDetails(${JSON.stringify(user).replace(/'/g, "&apos;")})' 
+              class="px-3 md:px-4 py-1.5 md:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm md:text-base font-medium transition-colors"
+            >
+              View
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function showDetails(user) {
+      document.getElementById('modal-name').textContent = user.full_name || "Unnamed User";
+      document.getElementById('modal-email').textContent = user.email;
+      
+      const allWeeks = [...new Set(user.courses.map(c => c.week_number))].sort((a, b) => a - b);
+      
+      const content = `
+        <div class="space-y-6">
+          <!-- Sessions Section -->
+          <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              Session Attendance
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              ${user.sessions.map(s => `
+                <div class="p-3 md:p-4 rounded-lg border-2 ${s.attended ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-sm md:text-base text-gray-700">Session ${s.session_number}</span>
+                    <span class="text-xl md:text-2xl">${s.attended ? '✅' : '❌'}</span>
+                  </div>
+                  <div class="text-xs md:text-sm text-gray-600 truncate" title="${s.session_title}">${s.session_title}</div>
+                  <div class="text-xs text-gray-500 mt-2">${new Date(s.created_at).toLocaleDateString('id-ID')}</div>
+                </div>
+              `).join('')}
+            </div>
+            ${user.sessions.length === 0 ? '<p class="text-gray-400 italic text-center py-4">No session records</p>' : ''}
+          </div>
+
+          <!-- Courses Section -->
+          <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+              </svg>
+              Course Progress by Week
+            </h3>
+            <div class="space-y-4">
+              ${allWeeks.map(wNum => {
+                const weekCourses = user.coursesByWeek[wNum] || [];
+                const completedCount = weekCourses.filter(c => c.completed).length;
+                
+                return `
+                  <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                    <div 
+                      class="p-4 bg-gray-100 cursor-pointer hover:bg-gray-200 transition-colors flex justify-between items-center"
+                      onclick="toggleWeekDetail('week-detail-${wNum}')"
+                    >
+                      <div class="flex items-center gap-3">
+                        <span class="text-lg font-bold text-gray-800">Week ${wNum}</span>
+                        <span class="px-3 py-1 bg-green-600 text-white rounded-full text-sm font-semibold">
+                          ${completedCount} completed
+                        </span>
+                      </div>
+                      <svg id="icon-week-detail-${wNum}" class="w-5 h-5 text-gray-600 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </div>
+                    <div id="week-detail-${wNum}" class="hidden bg-white">
+                      ${weekCourses.length > 0 ? `
+                        <div class="p-4 space-y-2">
+                          ${weekCourses.map(c => `
+                            <div class="flex items-center justify-between p-3 rounded-lg ${c.completed ? 'bg-green-50 border-2 border-green-200' : 'bg-yellow-50 border-2 border-yellow-200'}">
+                              <div class="flex items-center gap-3">
+                                <span class="text-xl">${c.completed ? '✅' : '⏳'}</span>
+                                <div>
+                                  <div class="font-semibold text-gray-800">${c.course_title}</div>
+                                  <div class="text-xs text-gray-500">${new Date(c.created_at).toLocaleDateString('id-ID')}</div>
+                                </div>
+                              </div>
+                              <span class="px-3 py-1 rounded-lg text-xs font-bold ${c.completed ? 'bg-green-600 text-white' : 'bg-yellow-500 text-white'}">
+                                ${c.completed ? 'COMPLETED' : 'PENDING'}
+                              </span>
+                            </div>
+                          `).join('')}
+                        </div>
+                      ` : `
+                        <div class="p-4 text-center text-gray-400 italic">No courses for this week</div>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            ${user.courses.length === 0 ? '<p class="text-gray-400 italic text-center py-4">No course records</p>' : ''}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('modal-content').innerHTML = content;
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function toggleWeekDetail(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById(`icon-${id}`);
+      
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function closeModal(event) {
+      if (!event || event.target === event.currentTarget) {
+        document.getElementById('detail-modal').classList.add('hidden');
+      }
+    }
+
+    // Search functionality
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      
+      if (query === '') {
+        renderUsers(allUsers);
+        return;
+      }
+      
+      const filtered = allUsers.filter(user => 
+        (user.full_name && user.full_name.toLowerCase().includes(query)) ||
+        (user.email && user.email.toLowerCase().includes(query))
+      );
+      
+      renderUsers(filtered);
+    });
+
+    loadData();
+  </script>
+
+</body>
+</html>

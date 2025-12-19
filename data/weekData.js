@@ -496,8 +496,53 @@ const weekData = {
     6: { title: "E-Course 6", materials: [] },
     7: { title: "E-Course 7", materials: [] },
     8: { title: "E-Course 8", materials: [] },
-    9: { title: "E-Course 9", materials: [] },
-    10: { title: "E-Course 10", materials: [] },
+ 9: {
+    title: "AI Mastery #4",
+    materials: [
+        {
+            type: "video",
+            title: "Menulis Karya Ilmiah Bebas Plagiasi dengan AI dan Mendeley",
+            videos: [
+                {
+                    title: "AI Mastery #4: Menulis Karya Ilmiah Bebas Plagiasi dengan AI dan Mendeley",
+                    url: "https://www.youtube.com/embed/sEx7NE7XUVw",
+                    embed: "sEx7NE7XUVw"
+                }
+            ],
+            description: "Pelajari cara menulis karya ilmiah bebas plagiasi dengan bantuan AI dan Mendeley",
+            download: {
+                materi: "https://drive.google.com/drive/folders/18nx8peGdA5Yqn9WeIT41Vo6HeC1b12gE",
+                notulensi: "https://drive.google.com/drive/folders/18nx8peGdA5Yqn9WeIT41Vo6HeC1b12gE"
+            }
+        }
+    ]
+},
+10: {
+    title: "Grant #1",
+    materials: [
+        {
+            type: "video",
+            title: "Step-by-Step Lolos Hibah Penelitian 2025 Hingga Menyelesaikan Target Luaran Hibah",
+            videos: [
+                {
+                    title: "Grant 1. Sesi 1",
+                    url: "https://www.youtube.com/embed/zQfPlAz7guA",
+                    embed: "zQfPlAz7guA"
+                },
+                {
+                    title: "QnA Sesi 1",
+                    url: "https://www.youtube.com/embed/jrJ1mGDnpOU",
+                    embed: "jrJ1mGDnpOU"
+                }
+            ],
+            description: "Panduan lengkap untuk lolos hibah penelitian 2025 dan menyelesaikan target luaran",
+            download: {
+                materi: "https://drive.google.com/file/d/1HMTcBRSPZTilnMz0sSd0IH8AMx80qKVB/view",
+                notulensi: "https://drive.google.com/file/d/1TX4U98oFgvyzDdAG5nr_bGX7fjV1H-IG/view"
+            }
+        }
+    ]
+},
     11: { title: "E-Course 11", materials: [] },
     12: { title: "E-Course 12", materials: [] }
 };

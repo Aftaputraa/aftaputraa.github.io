@@ -28,6 +28,14 @@ class Dashboard {
             totalCourses: totalCourses
         };
         
+        // Filter pekan yang memiliki materi
+        const weeksWithMaterials = Object.keys(weekData)
+            .filter(weekId => {
+                const materials = weekData[weekId]?.materials || [];
+                return materials.length > 0;
+            })
+            .sort((a, b) => parseInt(a) - parseInt(b));
+        
         return `
             <div class="max-w-6xl mx-auto">
                 <div class="bg-white shadow-lg rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
@@ -102,10 +110,11 @@ class Dashboard {
                     <div class="mt-6 md:mt-8">
                         <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6">Roadmap Onboarding</h2>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5">
-                            ${[1,2,3,4,5].map(weekNum => {
-                                const weekTitle = weekData[weekNum]?.title || 'Materi akan segera tersedia';
-                                const weekProgress = progress[weekNum] || {};
-                                const weekMaterials = weekData[weekNum]?.materials || [];
+                            ${weeksWithMaterials.map(weekId => {
+                                const weekNum = parseInt(weekId);
+                                const weekTitle = weekData[weekId]?.title || 'Materi akan segera tersedia';
+                                const weekProgress = progress[weekId] || {};
+                                const weekMaterials = weekData[weekId]?.materials || [];
                                 const completedCount = Object.values(weekProgress).filter(Boolean).length;
                                 const totalCount = weekMaterials.length;
                                 const isCompleted = completedCount === totalCount && totalCount > 0;
@@ -127,6 +136,15 @@ class Dashboard {
                                 </div>`;
                             }).join('')}
                         </div>
+                        
+                        <!-- Informasi tambahan untuk pekan kosong -->
+                        ${weeksWithMaterials.length > 0 ? `
+                        <div class="mt-4 md:mt-6 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p class="text-sm md:text-base text-yellow-800">
+                                <strong>Catatan:</strong> Beberapa pekan mungkin belum memiliki materi. Materi akan ditambahkan sesuai jadwal program.
+                            </p>
+                        </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>

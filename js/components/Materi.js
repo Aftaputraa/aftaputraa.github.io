@@ -7,6 +7,7 @@ class Materi {
     static currentVideoIndex = 0;
     static auth = new Auth();
     static listenersInitialized = false;
+    static unlockedWeek = 1; // Hanya week 1 yang terbuka
 
     static async init() {
         const content = await this.render();
@@ -21,8 +22,8 @@ class Materi {
     static setupGlobalEvents() {
         document.addEventListener('click', async (e) => {
             const tab = e.target.closest('.tab-button');
-            if (tab) {
-                await this.switchWeek(tab.dataset.week);
+            if (tab && !tab.classList.contains('locked')) {
+                await this.switchWeek(parseInt(tab.dataset.week));
                 return;
             }
 
@@ -61,6 +62,11 @@ class Materi {
     }
 
     static async switchWeek(weekId) {
+        if (weekId > this.unlockedWeek) {
+            this.showNotification('Minggu ini terkunci. Selesaikan minggu sebelumnya terlebih dahulu.', 'error');
+            return;
+        }
+        
         this.currentWeek = parseInt(weekId);
         this.currentCourseIndex = 0;
         this.currentVideoIndex = 0;
@@ -144,10 +150,23 @@ class Materi {
                     <div class="border-b border-gray-200 bg-gray-50">
                         <div class="flex overflow-x-auto">
                             ${availableWeeks.map(weekId => {
+                                const weekNum = parseInt(weekId);
                                 const weekProgress = progress[weekId] || {};
                                 const weekCompletedCount = Object.values(weekProgress).filter(Boolean).length;
                                 const weekTotalCount = weekData[weekId].materials.length;
                                 const isActive = weekId == this.currentWeek;
+                                const isLocked = weekNum > this.unlockedWeek;
+                                
+                                if (isLocked) {
+                                    return `
+                                    <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent cursor-not-allowed opacity-60" 
+                                            data-week="${weekId}">
+                                        <div class="flex items-center space-x-2">
+                                            <span>Pekan ${weekId}</span>
+                                            <ion-icon name="lock-closed" class="text-gray-500"></ion-icon>
+                                        </div>
+                                    </button>`;
+                                }
                                 
                                 return `
                                 <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${
@@ -167,6 +186,21 @@ class Materi {
                         </div>
                     </div>
                     
+                    ${this.currentWeek > this.unlockedWeek ? `
+                    <div class="p-8 md:p-12 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
+                            <ion-icon name="lock-closed" class="text-3xl text-yellow-600"></ion-icon>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Materi Terkunci</h3>
+                        <p class="text-gray-600 mb-4 max-w-md mx-auto">
+                            Selesaikan semua materi di Pekan ${this.unlockedWeek} untuk membuka akses ke pekan ini.
+                        </p>
+                        <button onclick="Materi.switchWeek('${this.unlockedWeek}')" 
+                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                            Kembali ke Pekan ${this.unlockedWeek}
+                        </button>
+                    </div>
+                    ` : `
                     <div class="p-4 md:p-6">
                         <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 md:p-6 border border-blue-200">
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -223,6 +257,7 @@ class Materi {
                             </div>
                         </div>
                     </div>
+                    `}
                 </div>
             </div>
         `;
@@ -333,6 +368,11 @@ class Materi {
 
     static async markAsComplete() {
         try {
+            if (this.currentWeek > this.unlockedWeek) {
+                this.showNotification('Tidak dapat menandai course di minggu terkunci', 'error');
+                return;
+            }
+
             const weekData = this.getCurrentWeekData();
             const currentCourse = weekData.materials[this.currentCourseIndex];
             
@@ -343,6 +383,18 @@ class Materi {
             
             this.showNotification(`"${currentCourse.title}" berhasil ditandai selesai!`, 'success');
             await this.rerenderCourseContent();
+            
+            // Cek apakah semua course di week ini sudah selesai
+            const progress = await this.auth.getCourseProgress();
+            const weekProgress = progress[this.currentWeek] || {};
+            const completedCount = Object.values(weekProgress).filter(Boolean).length;
+            const totalCount = weekData.materials.length;
+            
+            if (completedCount === totalCount && this.currentWeek === this.unlockedWeek) {
+                // Jika semua selesai, unlock week berikutnya
+                this.unlockedWeek = this.currentWeek + 1;
+                this.showNotification(`Selamat! Pekan ${this.currentWeek} selesai. Pekan ${this.unlockedWeek} sekarang terbuka!`, 'success');
+            }
             
         } catch (error) {
             console.error('Error marking as complete:', error);
@@ -405,6 +457,20 @@ class Materi {
             notification.remove();
         }, 3000);
     }
+
+    // Metode untuk unlock week berikutnya (jika diperlukan untuk testing)
+    static unlockNextWeek() {
+        if (this.unlockedWeek < this.getTotalWeeks()) {
+            this.unlockedWeek++;
+            this.showNotification(`Pekan ${this.unlockedWeek} sekarang terbuka!`, 'success');
+            this.switchWeek(this.unlockedWeek);
+        }
+    }
+
+    static getTotalWeeks() {
+        const weekData = getWeekData();
+        return Object.keys(weekData).length;
+    }
 }
 
 const style = document.createElement('style');
@@ -422,6 +488,17 @@ style.textContent = `
         left: 0;
         width: 100%;
         height: 100%;
+    }
+    
+    .tab-button.locked {
+        position: relative;
+        cursor: not-allowed;
+    }
+    
+    .tab-button.locked::after {
+        content: '🔒';
+        margin-left: 4px;
+        font-size: 12px;
     }
 `;
 document.head.appendChild(style);

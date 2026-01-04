@@ -3,16 +3,22 @@ import { getWeekData } from '../../data/weekData.js';
 import { courseAttendanceService } from '../config/supabase.js';
 
 class Dashboard {
+    static unlockedWeek = 1; // Hanya week 1 yang terbuka
+
     static async render() {
         const progress = await courseAttendanceService.getUserCourseProgress();
         const weekData = getWeekData();
         
-        // Hitung progress berdasarkan data presensi
+        // Filter hanya week yang unlocked
+        const availableWeeks = Object.keys(weekData)
+            .filter(weekId => parseInt(weekId) <= this.unlockedWeek)
+            .sort((a, b) => parseInt(a) - parseInt(b));
+        
+        // Hitung progress hanya dari week yang unlocked
         let totalCourses = 0;
         let completedCourses = 0;
         
-        // Hitung total course dan yang sudah selesai
-        Object.keys(weekData).forEach(weekId => {
+        availableWeeks.forEach(weekId => {
             const weekMaterials = weekData[weekId]?.materials || [];
             const weekProgress = progress[weekId] || {};
             
@@ -28,14 +34,13 @@ class Dashboard {
             totalCourses: totalCourses
         };
         
-        // Filter pekan yang memiliki materi
-        const weeksWithMaterials = Object.keys(weekData)
+        // Filter pekan yang memiliki materi dan unlocked
+        const weeksWithMaterials = availableWeeks
             .filter(weekId => {
                 const materials = weekData[weekId]?.materials || [];
                 return materials.length > 0;
-            })
-            .sort((a, b) => parseInt(a) - parseInt(b));
-        
+            });
+
         return `
             <div class="max-w-6xl mx-auto">
                 <div class="bg-white shadow-lg rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
@@ -106,7 +111,7 @@ class Dashboard {
                         </div>
                     </div>
 
-                    <!-- Roadmap Section -->
+                    <!-- Roadmap Section - Hanya Pekan 1 yang ditampilkan -->
                     <div class="mt-6 md:mt-8">
                         <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6">Roadmap Onboarding</h2>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5">
@@ -119,36 +124,93 @@ class Dashboard {
                                 const totalCount = weekMaterials.length;
                                 const isCompleted = completedCount === totalCount && totalCount > 0;
                                 const isInProgress = completedCount > 0 && completedCount < totalCount;
-                                const isAvailable = weekMaterials.length > 0;
+                                const isLocked = weekNum > this.unlockedWeek;
                                 
                                 return `
-                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 md:p-5 border-2 ${isCompleted?'border-green-400':isInProgress?'border-blue-400':isAvailable?'border-blue-200':'border-gray-200'} shadow-sm hover:shadow-md transition-shadow duration-300">
+                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 md:p-5 border-2 ${isCompleted?'border-green-400':isInProgress?'border-blue-400':'border-blue-200'} shadow-sm hover:shadow-md transition-shadow duration-300 ${isLocked ? 'opacity-60' : ''}">
                                     <div class="flex items-center justify-between mb-3 md:mb-4">
                                         <h3 class="font-bold text-gray-800 text-base md:text-lg">Pekan ${weekNum}</h3>
-                                        <span class="text-lg md:text-xl ${isCompleted?'text-green-600':isInProgress?'text-blue-600':isAvailable?'text-blue-500':'text-gray-400'}">
-                                            ${isCompleted?'✓':isInProgress?'⏳':isAvailable?'📚':'🔒'}
+                                        <span class="text-lg md:text-xl ${isCompleted?'text-green-600':isInProgress?'text-blue-600':isLocked?'text-gray-400':'text-blue-500'}">
+                                            ${isLocked ? '🔒' : isCompleted ? '✓' : isInProgress ? '⏳' : '📚'}
                                         </span>
                                     </div>
                                     <p class="text-gray-600 mb-3 md:mb-4 leading-relaxed text-sm md:text-base">${weekTitle}</p>
-                                    <div class="text-xs md:text-sm ${isCompleted?'text-green-600':isInProgress?'text-blue-600':isAvailable?'text-blue-600':'text-gray-500'} font-medium">
-                                        ${isCompleted?'✓ Selesai':isInProgress?`${completedCount}/${totalCount} Selesai`:isAvailable?'📚 Tersedia':'🔒 Terkunci'}
+                                    <div class="text-xs md:text-sm ${isCompleted?'text-green-600':isInProgress?'text-blue-600':isLocked?'text-gray-500':'text-blue-600'} font-medium">
+                                        ${isLocked ? '🔒 Terkunci' : isCompleted ? '✓ Selesai' : isInProgress ? `${completedCount}/${totalCount} Selesai` : '📚 Tersedia'}
                                     </div>
                                 </div>`;
                             }).join('')}
+                            
+                            <!-- Card untuk pekan terkunci -->
+                            ${this.unlockedWeek < Object.keys(weekData).length ? `
+                            <div class="relative">
+                                <div class="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-4 md:p-5 border-2 border-gray-300 opacity-60 cursor-not-allowed">
+                                    <div class="flex items-center justify-between mb-3 md:mb-4">
+                                        <h3 class="font-bold text-gray-500 text-base md:text-lg">Pekan ${this.unlockedWeek + 1}</h3>
+                                        <span class="text-lg md:text-xl text-gray-400">
+                                            🔒
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-500 mb-3 md:mb-4 leading-relaxed text-sm md:text-base">Materi terkunci</p>
+                                    <div class="text-xs md:text-sm text-gray-500 font-medium">
+                                        🔒 Selesaikan Pekan ${this.unlockedWeek}
+                                    </div>
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="bg-black bg-opacity-50 rounded-xl p-2 text-white text-xs font-medium">
+                                        Selesaikan Pekan ${this.unlockedWeek}
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                         
-                        <!-- Informasi tambahan untuk pekan kosong -->
-                        ${weeksWithMaterials.length > 0 ? `
-                        <div class="mt-4 md:mt-6 p-3 md:p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p class="text-sm md:text-base text-yellow-800">
-                                <strong>Catatan:</strong> Beberapa pekan mungkin belum memiliki materi. Materi akan ditambahkan sesuai jadwal program.
+                        <!-- Informasi lock system -->
+                        <div class="mt-4 md:mt-6 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-sm md:text-base text-blue-800">
+                                <strong>Informasi:</strong> Materi akan terbuka secara bertahap. Selesaikan semua materi di <strong>Pekan ${this.unlockedWeek}</strong> untuk membuka pekan berikutnya.
                             </p>
                         </div>
-                        ` : ''}
                     </div>
+
+                    <!-- Locked Weeks Preview -->
+                    ${this.unlockedWeek < Object.keys(weekData).length ? `
+                    <div class="mt-6 md:mt-8">
+                        <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4 md:mb-6">Preview Pekan Berikutnya</h2>
+                        <div class="p-4 md:p-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 md:w-12 md:h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <ion-icon name="lock-closed" class="text-xl md:text-2xl text-yellow-600"></ion-icon>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-yellow-800 text-base md:text-lg mb-2">Akses Pekan Berikutnya</h3>
+                                    <p class="text-yellow-700 mb-3 md:mb-4">
+                                        Selesaikan semua materi di <strong>Pekan ${this.unlockedWeek}</strong> untuk membuka akses ke pekan berikutnya. 
+                                        Sistem ini dirancang untuk memastikan Anda memahami konsep dasar sebelum melanjutkan.
+                                    </p>
+                                    <div class="flex items-center space-x-2 text-sm md:text-base">
+                                        <span class="text-green-600 font-medium">✓</span>
+                                        <span class="text-gray-700">Belajar bertahap dan terstruktur</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm md:text-base mt-2">
+                                        <span class="text-green-600 font-medium">✓</span>
+                                        <span class="text-gray-700">Pastikan pemahaman konsep dasar</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
+    }
+
+    // Method untuk update unlocked week (bisa dipanggil dari Materi component)
+    static updateUnlockedWeek(newWeek) {
+        this.unlockedWeek = newWeek;
     }
 }
 

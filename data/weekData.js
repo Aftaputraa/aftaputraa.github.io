@@ -57,6 +57,37 @@ const weekData = {
             },
             {
                 type: "video",
+                title: "Strategi AI Gratisan Jadi Rasa Pro Untuk Akademik",
+                videos: [
+                    {
+                        title: "Sesi 1: Strategi AI Gratisan Jadi Rasa Pro Untuk Akademik",
+                        url: "https://www.youtube.com/embed/W0VfIL0pE4A",
+                        embed: "W0VfIL0pE4A"
+                    },
+                    {
+                        title: "QnA Sesi 1",
+                        url: "https://www.youtube.com/embed/fDEtxbll_Cw",
+                        embed: "fDEtxbll_Cw"
+                    },
+                    {
+                        title: "Sesi 2: Strategi AI Gratisan Jadi Rasa Pro Untuk Akademik",
+                        url: "https://www.youtube.com/embed/bKciSRGsE5g",
+                        embed: "bKciSRGsE5g"
+                    },
+                    {
+                        title: "QnA Sesi 2",
+                        url: "https://www.youtube.com/embed/4IVt_OsWwLo",
+                        embed: "4IVt_OsWwLo"
+                    }
+                ],
+                description: "Pelajari strategi memanfaatkan AI gratis untuk kebutuhan akademik dengan hasil profesional",
+                download: {
+                    materi: "https://drive.google.com/file/d/1l1rgHJ9-gaBxLzPtaB4g3Xjn3tFwHLxO/view?usp=drive_link",
+                    notulensi: "#"
+                }
+            },
+            {
+                type: "video",
                 title: "Strategi Produktif Menulis Artikel Terindeks SINTA dan Scopus",
                 videos: [
                     {
@@ -179,37 +210,6 @@ const weekData = {
                     notulensi: "https://drive.google.com/file/d/1FfzvaaK2L2V8IsEbre9M0Hlt-fWmVvCd/view?usp=drive_link"
                 }
             },
-            {
-                type: "video",
-                title: "Strategi AI Gratisan Jadi Rasa Pro Untuk Akademik",
-                videos: [
-                    {
-                        title: "Sesi 1: Strategi AI Gratisan Jadi Rasa Pro Untuk Akademik",
-                        url: "https://www.youtube.com/embed/W0VfIL0pE4A",
-                        embed: "W0VfIL0pE4A"
-                    },
-                    {
-                        title: "QnA Sesi 1",
-                        url: "https://www.youtube.com/embed/fDEtxbll_Cw",
-                        embed: "fDEtxbll_Cw"
-                    },
-                    {
-                        title: "Sesi 2: Strategi AI Gratisan Jadi Rasa Pro Untuk Akademik",
-                        url: "https://www.youtube.com/embed/bKciSRGsE5g",
-                        embed: "bKciSRGsE5g"
-                    },
-                    {
-                        title: "QnA Sesi 2",
-                        url: "https://www.youtube.com/embed/4IVt_OsWwLo",
-                        embed: "4IVt_OsWwLo"
-                    }
-                ],
-                description: "Pelajari strategi memanfaatkan AI gratis untuk kebutuhan akademik dengan hasil profesional",
-                download: {
-                    materi: "https://drive.google.com/file/d/1l1rgHJ9-gaBxLzPtaB4g3Xjn3tFwHLxO/view?usp=drive_link",
-                    notulensi: "#"
-                }
-            }
         ]
     },
     3: {

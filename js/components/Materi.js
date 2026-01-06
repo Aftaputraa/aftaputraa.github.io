@@ -7,9 +7,42 @@ class Materi {
     static currentVideoIndex = 0;
     static auth = new Auth();
     static listenersInitialized = false;
-    static unlockedWeek = 1; // Hanya week 1 yang terbuka
+    
+    // Whitelist email yang bisa akses semua week
+    static whitelistEmails = [
+        'admin@hcelerate.id',
+        'mentor@hcelerate.id', 
+        'reviewer@hcelerate.id',
+        'testing@hcelerate.id',
+        'setyo@gmail.com',
+        'set@hcelerate.id',
+        'kampusriset@hcelerate.id',
+        'michaelparlie@gmail.com'  // Email baru ditambahkan
+    ];
+    
+    // Variable untuk menentukan week mana yang terbuka untuk regular user
+    static unlockedWeekForRegular = 1;
+    
+    // Flag untuk menandai apakah user whitelist
+    static isWhitelisted = false;
 
     static async init() {
+        // Cek apakah user ada di whitelist
+        const currentUserStr = localStorage.getItem('currentUser');
+        if (currentUserStr) {
+            try {
+                const currentUser = JSON.parse(currentUserStr);
+                const userEmail = currentUser.email;
+                
+                // Check whitelist (case-insensitive)
+                this.isWhitelisted = this.whitelistEmails.some(
+                    whitelistEmail => whitelistEmail.toLowerCase() === userEmail.toLowerCase()
+                );
+            } catch (e) {
+                console.error('Error parsing currentUser:', e);
+            }
+        }
+        
         const content = await this.render();
         document.getElementById('content').innerHTML = content;
 
@@ -22,7 +55,7 @@ class Materi {
     static setupGlobalEvents() {
         document.addEventListener('click', async (e) => {
             const tab = e.target.closest('.tab-button');
-            if (tab && !tab.classList.contains('locked')) {
+            if (tab) {
                 await this.switchWeek(parseInt(tab.dataset.week));
                 return;
             }
@@ -62,8 +95,9 @@ class Materi {
     }
 
     static async switchWeek(weekId) {
-        if (weekId > this.unlockedWeek) {
-            this.showNotification('Minggu ini terkunci. Selesaikan minggu sebelumnya terlebih dahulu.', 'error');
+        // Jika bukan whitelist dan mencoba akses week yang terkunci
+        if (!this.isWhitelisted && weekId > this.unlockedWeekForRegular) {
+            this.showNotification('Minggu ini terkunci. Materi akan dibuka sesuai jadwal program.', 'error');
             return;
         }
         
@@ -155,7 +189,7 @@ class Materi {
                                 const weekCompletedCount = Object.values(weekProgress).filter(Boolean).length;
                                 const weekTotalCount = weekData[weekId].materials.length;
                                 const isActive = weekId == this.currentWeek;
-                                const isLocked = weekNum > this.unlockedWeek;
+                                const isLocked = !this.isWhitelisted && weekNum > this.unlockedWeekForRegular;
                                 
                                 if (isLocked) {
                                     return `
@@ -186,18 +220,18 @@ class Materi {
                         </div>
                     </div>
                     
-                    ${this.currentWeek > this.unlockedWeek ? `
+                    ${!this.isWhitelisted && this.currentWeek > this.unlockedWeekForRegular ? `
                     <div class="p-8 md:p-12 text-center">
                         <div class="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
                             <ion-icon name="lock-closed" class="text-3xl text-yellow-600"></ion-icon>
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 mb-2">Materi Terkunci</h3>
                         <p class="text-gray-600 mb-4 max-w-md mx-auto">
-                            Selesaikan semua materi di Pekan ${this.unlockedWeek} untuk membuka akses ke pekan ini.
+                            Materi Pekan ${this.currentWeek} akan dibuka sesuai timeline program.
                         </p>
-                        <button onclick="Materi.switchWeek('${this.unlockedWeek}')" 
+                        <button onclick="Materi.switchWeek('${this.unlockedWeekForRegular}')" 
                                 class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
-                            Kembali ke Pekan ${this.unlockedWeek}
+                            Kembali ke Pekan ${this.unlockedWeekForRegular}
                         </button>
                     </div>
                     ` : `
@@ -368,7 +402,7 @@ class Materi {
 
     static async markAsComplete() {
         try {
-            if (this.currentWeek > this.unlockedWeek) {
+            if (!this.isWhitelisted && this.currentWeek > this.unlockedWeekForRegular) {
                 this.showNotification('Tidak dapat menandai course di minggu terkunci', 'error');
                 return;
             }
@@ -383,18 +417,6 @@ class Materi {
             
             this.showNotification(`"${currentCourse.title}" berhasil ditandai selesai!`, 'success');
             await this.rerenderCourseContent();
-            
-            // Cek apakah semua course di week ini sudah selesai
-            const progress = await this.auth.getCourseProgress();
-            const weekProgress = progress[this.currentWeek] || {};
-            const completedCount = Object.values(weekProgress).filter(Boolean).length;
-            const totalCount = weekData.materials.length;
-            
-            if (completedCount === totalCount && this.currentWeek === this.unlockedWeek) {
-                // Jika semua selesai, unlock week berikutnya
-                this.unlockedWeek = this.currentWeek + 1;
-                this.showNotification(`Selamat! Pekan ${this.currentWeek} selesai. Pekan ${this.unlockedWeek} sekarang terbuka!`, 'success');
-            }
             
         } catch (error) {
             console.error('Error marking as complete:', error);
@@ -458,18 +480,10 @@ class Materi {
         }, 3000);
     }
 
-    // Metode untuk unlock week berikutnya (jika diperlukan untuk testing)
-    static unlockNextWeek() {
-        if (this.unlockedWeek < this.getTotalWeeks()) {
-            this.unlockedWeek++;
-            this.showNotification(`Pekan ${this.unlockedWeek} sekarang terbuka!`, 'success');
-            this.switchWeek(this.unlockedWeek);
-        }
-    }
-
-    static getTotalWeeks() {
-        const weekData = getWeekData();
-        return Object.keys(weekData).length;
+    // Method untuk mengubah unlocked week secara manual (untuk admin)
+    static setUnlockedWeekForRegular(newWeek) {
+        this.unlockedWeekForRegular = newWeek;
+        this.showNotification(`Pekan 1-${newWeek} sekarang terbuka untuk regular user`, 'info');
     }
 }
 
@@ -488,17 +502,6 @@ style.textContent = `
         left: 0;
         width: 100%;
         height: 100%;
-    }
-    
-    .tab-button.locked {
-        position: relative;
-        cursor: not-allowed;
-    }
-    
-    .tab-button.locked::after {
-        content: '🔒';
-        margin-left: 4px;
-        font-size: 12px;
     }
 `;
 document.head.appendChild(style);

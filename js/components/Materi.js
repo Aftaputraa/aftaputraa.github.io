@@ -2,7 +2,7 @@ import { getWeekData } from '../../data/weekData.js';
 import Auth from '../auth.js';
 
 class Materi {
-    static currentWeek = 1;
+    static currentWeek = 2;
     static currentCourseIndex = 0;
     static currentVideoIndex = 0;
     static auth = new Auth();
@@ -21,7 +21,7 @@ class Materi {
     ];
     
     // Variable untuk menentukan week mana yang terbuka untuk regular user
-    static unlockedWeekForRegular = 1;
+    static unlockedWeekForRegular = 2;
     
     // Flag untuk menandai apakah user whitelist
     static isWhitelisted = false;

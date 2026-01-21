@@ -276,6 +276,78 @@ const weekData = {
                     materi: "https://drive.google.com/drive/folders/18ERejX83PMYAcxUvhG3Dl2b0HYwJTgqi?usp=drive_link",
                     notulensi: "https://drive.google.com/drive/folders/1JKfgf-w40finG8mBn68QtPQYV-Z9gruX?usp=drive_link"
                 }
+            },
+            {
+                type: "video",
+                title: "Tembus Scopus Lewat SLR dan AI: Strategi Menuju Publikasi Bereputasi",
+                videos: [
+                    {
+                        title: "SLR 4 Sesi 1",
+                        url: "https://www.youtube.com/embed/LF-S93z_G18",
+                        embed: "LF-S93z_G18"
+                    },
+                    {
+                        title: "QnA SLR 4 Sesi 1",
+                        url: "https://www.youtube.com/embed/bwwNqPGLyIg",
+                        embed: "bwwNqPGLyIg"
+                    },
+                    {
+                        title: "SLR 4 Sesi 2",
+                        url: "https://www.youtube.com/embed/HWb99XyyZLw",
+                        embed: "HWb99XyyZLw"
+                    },
+                    {
+                        title: "QnA SLR 4 Sesi 2",
+                        url: "https://www.youtube.com/embed/NlgH2p4_Zho",
+                        embed: "NlgH2p4_Zho"
+                    },
+                    {
+                        title: "SLR 4 Sesi 3",
+                        url: "https://www.youtube.com/embed/-ZkY58iUYho",
+                        embed: "-ZkY58iUYho"
+                    },
+                    {
+                        title: "QnA SLR 4 Sesi 3",
+                        url: "https://www.youtube.com/embed/JPhv3Oaa83A",
+                        embed: "JPhv3Oaa83A"
+                    }
+                ],
+                description: "Strategi menuju publikasi bereputasi dengan Systematic Literature Review dan AI",
+                download: {
+                    materi: "#",
+                    notulensi: "#"
+                }
+            },
+            {
+                type: "video",
+                title: "Menguasai Kuantitatif, Kualitatif, dan Mixed Methods untuk Riset Akademik",
+                videos: [
+                    {
+                        title: "Data 5 Sesi 1",
+                        url: "https://www.youtube.com/embed/y3LDQd4OSiQ",
+                        embed: "y3LDQd4OSiQ"
+                    },
+                    {
+                        title: "QnA Data 5 Sesi 1",
+                        url: "https://www.youtube.com/embed/N8VZUwPYx_0",
+                        embed: "N8VZUwPYx_0"
+                    },
+                    {
+                        title: "Data 5 Sesi 2",
+                        url: "https://www.youtube.com/embed/U2kQayCDsWA",
+                        embed: "U2kQayCDsWA"
+                    },
+                    {
+                        title: "QnA Data 5 Sesi 2",
+                        url: "https://www.youtube.com/embed/U1lAzoWWHnw",
+                        embed: "U1lAzoWWHnw"
+                    }
+                ],
+                description: "Penguasaan metode penelitian kuantitatif, kualitatif, dan mixed methods untuk riset akademik",
+                download: {
+                    materi: "#",
+                    notulensi: "#"
+                }
             }
         ]
     },

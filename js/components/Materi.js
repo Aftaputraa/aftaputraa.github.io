@@ -1,8 +1,9 @@
 import { getWeekData } from '../../data/weekData.js';
 import Auth from '../auth.js';
+import { supabase } from '../config/supabase.js';
 
 class Materi {
-    static currentWeek = 3;
+    static currentWeek = 4;
     static currentCourseIndex = 0;
     static currentVideoIndex = 0;
     static auth = new Auth();
@@ -17,24 +18,22 @@ class Materi {
         'setyo@gmail.com',
         'set@hcelerate.id',
         'kampusriset@hcelerate.id',
-        'michaelparlie@gmail.com'  // Email baru ditambahkan
+        'michaelparlie@gmail.com'
     ];
     
     // Variable untuk menentukan week mana yang terbuka untuk regular user
-    static unlockedWeekForRegular = 3;
+    static unlockedWeekForRegular = 4;
     
     // Flag untuk menandai apakah user whitelist
     static isWhitelisted = false;
 
     static async init() {
-        // Cek apakah user ada di whitelist
         const currentUserStr = localStorage.getItem('currentUser');
         if (currentUserStr) {
             try {
                 const currentUser = JSON.parse(currentUserStr);
                 const userEmail = currentUser.email;
                 
-                // Check whitelist (case-insensitive)
                 this.isWhitelisted = this.whitelistEmails.some(
                     whitelistEmail => whitelistEmail.toLowerCase() === userEmail.toLowerCase()
                 );
@@ -52,6 +51,276 @@ class Materi {
         }
     }
 
+    // ==================== SUPABASE METHODS ====================
+    
+    static async getUserCourseIndexes(email) {
+        if (this.currentWeek !== 4) return [];
+        
+        try {
+            const { data, error } = await supabase
+                .from('user_week4_choices')
+                .select('course_index')
+                .eq('email', email);
+            
+            if (error) throw error;
+            return data.map(item => item.course_index);
+        } catch (error) {
+            console.error('Error fetching user courses:', error);
+            return [1];
+        }
+    }
+    
+    static async saveUserCourseIndexes(email, indexes) {
+        try {
+            const optionalIndexes = indexes.filter(idx => idx >= 2 && idx <= 14);
+            if (optionalIndexes.length > 5) {
+                this.showNotification('Maksimal 5 course opsional!', 'error');
+                return false;
+            }
+            
+            // Cek apakah sudah pernah pilih
+            const { data: existingSelections } = await supabase
+                .from('user_week4_choices')
+                .select('*')
+                .eq('email', email);
+            
+            const hasOptionalSelections = existingSelections && 
+                existingSelections.some(selection => selection.course_index >= 2);
+            
+            if (hasOptionalSelections) {
+                this.showNotification('Anda sudah memilih course. Untuk perubahan, hubungi admin.', 'info');
+                return false;
+            }
+            
+            const allIndexes = [1, ...optionalIndexes];
+            
+            // Hapus semua (khusus untuk user baru)
+            await supabase
+                .from('user_week4_choices')
+                .delete()
+                .eq('email', email);
+            
+            // Insert baru
+            const insertData = allIndexes.map(index => ({
+                email,
+                course_index: index
+            }));
+            
+            const { error } = await supabase
+                .from('user_week4_choices')
+                .insert(insertData);
+            
+            if (error) throw error;
+            
+            return true;
+        } catch (error) {
+            console.error('Error saving courses:', error);
+            this.showNotification('Gagal menyimpan pilihan', 'error');
+            return false;
+        }
+    }
+    
+    static async getFilteredWeek4Courses(email) {
+        const week4Data = getWeekData()[4];
+        const userIndexes = await this.getUserCourseIndexes(email);
+        
+        if (userIndexes.length <= 1) {
+            return week4Data.materials.filter(course => course.index === 1);
+        }
+        
+        return week4Data.materials.filter(course => 
+            userIndexes.includes(course.index)
+        );
+    }
+    
+    // ==================== MODAL METHODS ====================
+    
+    static async showCourseSelectionModal(email) {
+        const week4Courses = getWeekData()[4].materials;
+        const currentSelections = await this.getUserCourseIndexes(email);
+        
+        // Cek apakah sudah pernah pilih
+        const hasOptionalSelections = currentSelections.some(idx => idx >= 2);
+        
+        if (hasOptionalSelections) {
+            this.showNotification('Anda sudah memilih course. Untuk perubahan, hubungi admin.', 'info');
+            return;
+        }
+        
+        const mandatory = week4Courses.find(c => c.index === 1);
+        const kuantitatif = week4Courses.filter(c => c.category === 'kuantitatif');
+        const kualitatif = week4Courses.filter(c => 
+            c.category === 'kualitatif' || 
+            c.category === 'slr' || 
+            c.category === 'bibliometrik'
+        );
+        
+        const selectedOptionalCount = currentSelections.filter(idx => idx >= 2).length;
+        
+        const modalHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" id="courseSelectionModal">
+                <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Pilih Course Pekan 4</h3>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                            <div class="flex items-start">
+                                <ion-icon name="information-circle" class="text-blue-600 mr-2 mt-0.5"></ion-icon>
+                                <div>
+                                    <p class="text-blue-800 text-sm">
+                                        Pilih maksimal 5 course opsional. Pilihan dapat diubah dengan menghubungi admin.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Pilih <span class="font-bold">maksimal 5 course opsional</span> sesuai kebutuhan penelitian Anda</p>
+                    </div>
+                    
+                    <div class="mb-4 p-3 bg-blue-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span>Course opsional terpilih:</span>
+                            <span class="text-lg font-bold"><span id="selectedCount">${selectedOptionalCount}</span>/5</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Wajib -->
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center">
+                            <input type="checkbox" checked disabled class="h-5 w-5 mr-3 text-green-600">
+                            <div>
+                                <div class="font-bold text-green-800">${mandatory.title}</div>
+                                <div class="text-sm text-green-600 mt-1">(Wajib untuk semua peserta)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4 font-medium text-gray-800">MATERI PILIHAN:</p>
+                    
+                    <!-- Opsional: KUANTITATIF -->
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-3 text-sm uppercase">Kuantitatif</h4>
+                        <div class="space-y-2">
+                            ${kuantitatif.map(course => `
+                                <label class="course-option flex items-start p-3 border rounded hover:bg-blue-50 cursor-pointer ${
+                                    currentSelections.includes(course.index) ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                }">
+                                    <input type="checkbox" 
+                                           class="optional-checkbox h-5 w-5 mr-3 mt-1"
+                                           value="${course.index}"
+                                           ${currentSelections.includes(course.index) ? 'checked' : ''}>
+                                    <div class="flex-1">
+                                        <div class="font-medium">${course.title}</div>
+                                        <div class="text-sm text-gray-500">${course.videos.length} sesi</div>
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Opsional: KUALITATIF -->
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-3 text-sm uppercase">Kualitatif</h4>
+                        <div class="space-y-2">
+                            ${kualitatif.map(course => `
+                                <label class="course-option flex items-start p-3 border rounded hover:bg-purple-50 cursor-pointer ${
+                                    currentSelections.includes(course.index) ? 'border-purple-500 bg-purple-50' : 'border-gray-200'
+                                }">
+                                    <input type="checkbox" 
+                                           class="optional-checkbox h-5 w-5 mr-3 mt-1"
+                                           value="${course.index}"
+                                           ${currentSelections.includes(course.index) ? 'checked' : ''}>
+                                    <div class="flex-1">
+                                        <div class="font-medium">${course.title}</div>
+                                        <div class="text-sm text-gray-500">${course.videos.length} sesi</div>
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t">
+                        <button type="button" class="modal-cancel-btn px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            Nanti Saja
+                        </button>
+                        <button type="button" class="modal-save-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Simpan Pilihan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Hapus modal lama jika ada
+        const existingModal = document.getElementById('courseSelectionModal');
+        if (existingModal) existingModal.remove();
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        this.setupModalEvents(email);
+    }
+    
+    static setupModalEvents(email) {
+        const modal = document.getElementById('courseSelectionModal');
+        if (!modal) return;
+
+        const updateSelectionCount = () => {
+            const selected = modal.querySelectorAll('.optional-checkbox:checked').length;
+            document.getElementById('selectedCount').textContent = selected;
+            
+            if (selected >= 5) {
+                modal.querySelectorAll('.optional-checkbox:not(:checked)').forEach(cb => cb.disabled = true);
+            } else {
+                modal.querySelectorAll('.optional-checkbox').forEach(cb => cb.disabled = false);
+            }
+        };
+
+        // Event untuk checkbox
+        modal.addEventListener('change', (e) => {
+            if (e.target.classList.contains('optional-checkbox')) {
+                const selected = modal.querySelectorAll('.optional-checkbox:checked').length;
+                if (selected > 5) {
+                    e.target.checked = false;
+                    this.showNotification('Maksimal 5 course opsional!', 'error');
+                    return;
+                }
+                updateSelectionCount();
+            }
+        });
+
+        // Save button
+        modal.querySelector('.modal-save-btn').addEventListener('click', async () => {
+            const checkboxes = modal.querySelectorAll('.optional-checkbox:checked');
+            const indexes = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (indexes.length === 0) {
+                this.showNotification('Pilih minimal 1 course opsional', 'error');
+                return;
+            }
+            
+            const success = await this.saveUserCourseIndexes(email, indexes);
+            
+            if (success) {
+                modal.remove();
+                this.showNotification('Pilihan berhasil disimpan! Untuk perubahan hubungi admin.', 'success');
+                const content = await this.render();
+                document.getElementById('content').innerHTML = content;
+            }
+        });
+
+        // Cancel button
+        modal.querySelector('.modal-cancel-btn').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Close modal outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+
+        updateSelectionCount();
+    }
+    
+    // ==================== MAIN RENDER METHODS ====================
+
     static setupGlobalEvents() {
         document.addEventListener('click', async (e) => {
             const tab = e.target.closest('.tab-button');
@@ -66,36 +335,35 @@ class Materi {
                 return;
             }
 
-            if (e.target.closest('.video-nav-prev')) {
-                await this.previousVideo();
-                return;
-            }
-
-            if (e.target.closest('.video-nav-next')) {
-                await this.nextVideo();
-                return;
-            }
-
-            if (e.target.closest('.course-nav-prev')) {
-                await this.previousCourse();
-                return;
-            }
-
-            if (e.target.closest('.course-nav-next')) {
-                await this.nextCourse();
-                return;
-            }
+            if (e.target.closest('.video-nav-prev')) await this.previousVideo();
+            if (e.target.closest('.video-nav-next')) await this.nextVideo();
+            if (e.target.closest('.course-nav-prev')) await this.previousCourse();
+            if (e.target.closest('.course-nav-next')) await this.nextCourse();
 
             const mc = e.target.closest('.mark-complete');
-            if (mc) {
-                await this.markAsComplete();
+            if (mc) await this.markAsComplete();
+
+            // Tombol "Pilih/Ubah Pilihan"
+            const editBtn = e.target.closest('.edit-selections-btn');
+            if (editBtn) {
+                const currentUserStr = localStorage.getItem('currentUser');
+                if (currentUserStr) {
+                    const currentUser = JSON.parse(currentUserStr);
+                    this.showCourseSelectionModal(currentUser.email);
+                }
+                return;
+            }
+            
+            const switchWeekBtn = e.target.closest('.switch-week-btn');
+            if (switchWeekBtn) {
+                const weekId = parseInt(switchWeekBtn.dataset.week);
+                await this.switchWeek(weekId);
                 return;
             }
         });
     }
 
     static async switchWeek(weekId) {
-        // Jika bukan whitelist dan mencoba akses week yang terkunci
         if (!this.isWhitelisted && weekId > this.unlockedWeekForRegular) {
             this.showNotification('Minggu ini terkunci. Materi akan dibuka sesuai jadwal program.', 'error');
             return;
@@ -127,8 +395,17 @@ class Materi {
     }
 
     static async nextCourse() {
-        const weekData = this.getCurrentWeekData();
-        if (this.currentCourseIndex < weekData.materials.length - 1) {
+        const currentUserStr = localStorage.getItem('currentUser');
+        let materials = this.getCurrentWeekData().materials;
+        
+        if (this.currentWeek === 4 && currentUserStr) {
+            try {
+                const currentUser = JSON.parse(currentUserStr);
+                materials = await this.getFilteredWeek4Courses(currentUser.email);
+            } catch (e) {}
+        }
+        
+        if (this.currentCourseIndex < materials.length - 1) {
             await this.switchCourse(this.currentCourseIndex + 1);
         }
     }
@@ -140,24 +417,20 @@ class Materi {
     }
 
     static async nextVideo() {
-        const course = this.getCurrentWeekData().materials[this.currentCourseIndex];
-        if (this.currentVideoIndex < course.videos.length - 1) {
+        const currentUserStr = localStorage.getItem('currentUser');
+        let materials = this.getCurrentWeekData().materials;
+        
+        if (this.currentWeek === 4 && currentUserStr) {
+            try {
+                const currentUser = JSON.parse(currentUserStr);
+                materials = await this.getFilteredWeek4Courses(currentUser.email);
+            } catch (e) {}
+        }
+        
+        const course = materials[this.currentCourseIndex];
+        if (course && this.currentVideoIndex < course.videos.length - 1) {
             await this.switchVideo(this.currentVideoIndex + 1);
         }
-    }
-
-    static async rerenderCourseContent() {
-        const weekData = this.getCurrentWeekData();
-        const progress = await this.auth.getCourseProgress();
-        const weekProgress = progress[this.currentWeek] || {};
-        const course = weekData.materials[this.currentCourseIndex];
-
-        const container = document.querySelector('.lg\\:col-span-3 > div');
-        if (container) {
-            container.innerHTML = this.renderCourseContent(course, weekProgress);
-        }
-
-        this.updateCourseList();
     }
 
     static async render() {
@@ -168,10 +441,32 @@ class Materi {
             weekId => weekData[weekId].materials && weekData[weekId].materials.length > 0
         );
 
-        const currentWeekData = weekData[this.currentWeek];
+        let currentWeekData = weekData[this.currentWeek];
+        let materialsToRender = currentWeekData.materials;
+        let totalCount = currentWeekData.materials.length;
+        
+        if (this.currentWeek === 4) {
+            const currentUserStr = localStorage.getItem('currentUser');
+            if (currentUserStr) {
+                try {
+                    const currentUser = JSON.parse(currentUserStr);
+                    materialsToRender = await this.getFilteredWeek4Courses(currentUser.email);
+                    totalCount = materialsToRender.length;
+                    
+                    const userIndexes = await this.getUserCourseIndexes(currentUser.email);
+                    const optionalCount = userIndexes.filter(idx => idx >= 2).length;
+                    
+                    if (optionalCount === 0 && !this.isWhitelisted) {
+                        setTimeout(() => this.showCourseSelectionModal(currentUser.email), 500);
+                    }
+                } catch (e) {}
+            }
+        }
+
         const weekProgress = progress[this.currentWeek] || {};
-        const completedCount = Object.values(weekProgress).filter(Boolean).length;
-        const totalCount = currentWeekData.materials.length;
+        const completedCount = materialsToRender.filter(course => 
+            weekProgress[course.title]
+        ).length;
 
         return `
             <div class="max-w-6xl mx-auto">
@@ -229,8 +524,8 @@ class Materi {
                         <p class="text-gray-600 mb-4 max-w-md mx-auto">
                             Materi Pekan ${this.currentWeek} akan dibuka sesuai timeline program.
                         </p>
-                        <button onclick="Materi.switchWeek('${this.unlockedWeekForRegular}')" 
-                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                        <button class="switch-week-btn bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                                data-week="${this.unlockedWeekForRegular}">
                             Kembali ke Pekan ${this.unlockedWeekForRegular}
                         </button>
                     </div>
@@ -241,6 +536,14 @@ class Materi {
                                 <div>
                                     <h2 class="text-xl md:text-2xl font-bold text-gray-900">${currentWeekData.title}</h2>
                                     <p class="text-gray-600 mt-1">${totalCount} e-course tersedia</p>
+                                    ${this.currentWeek === 4 ? `
+                                    <div class="flex items-center space-x-2 mt-2">
+                                        <span class="text-sm text-gray-500">Personalized learning path</span>
+                                        <button class="edit-selections-btn text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                            ✏️ Pilih/Edit Course
+                                        </button>
+                                    </div>
+                                    ` : ''}
                                 </div>
                                 <div class="bg-white rounded-full px-4 py-2 border border-blue-200">
                                     <span class="text-blue-700 font-medium text-sm">
@@ -255,9 +558,10 @@ class Materi {
                                 <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
                                     <h3 class="font-semibold text-gray-800 mb-3">Daftar E-Course</h3>
                                     <div class="space-y-2 max-h-96 overflow-y-auto">
-                                        ${currentWeekData.materials.map((course, index) => {
+                                        ${materialsToRender.map((course, index) => {
                                             const isCompleted = weekProgress[course.title] || false;
                                             const isActive = index === this.currentCourseIndex;
+                                            const displayNumber = this.currentWeek === 4 ? course.index : index + 1;
                                             
                                             return `
                                             <button class="course-item w-full text-left p-3 rounded-lg transition ${
@@ -269,7 +573,7 @@ class Materi {
                                                         isCompleted ? 'bg-green-500 text-white' : 
                                                         isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
                                                     }">
-                                                        ${isCompleted ? '✓' : index + 1}
+                                                        ${isCompleted ? '✓' : displayNumber}
                                                     </div>
                                                     <div class="flex-1 min-w-0">
                                                         <div class="font-medium text-sm truncate">${course.title}</div>
@@ -286,7 +590,7 @@ class Materi {
 
                             <div class="lg:col-span-3">
                                 <div>
-                                    ${this.renderCourseContent(currentWeekData.materials[this.currentCourseIndex], weekProgress)}
+                                    ${this.renderCourseContent(materialsToRender[this.currentCourseIndex], weekProgress, materialsToRender.length)}
                                 </div>
                             </div>
                         </div>
@@ -297,13 +601,9 @@ class Materi {
         `;
     }
 
-    static renderCourseContent(course, weekProgress) {
+    static renderCourseContent(course, weekProgress, totalMaterialsCount) {
         if (!course) {
-            return `
-                <div class="p-8 text-center">
-                    <p class="text-gray-500">Tidak ada course yang tersedia</p>
-                </div>
-            `;
+            return `<div class="p-8 text-center"><p class="text-gray-500">Tidak ada course yang tersedia</p></div>`;
         }
 
         const isCompleted = weekProgress[course.title] || false;
@@ -390,7 +690,7 @@ class Materi {
                         </button>
                         
                         <button class="course-nav-next flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
-                                ${this.currentCourseIndex === this.getCurrentWeekData().materials.length - 1 ? 'disabled' : ''}>
+                                ${this.currentCourseIndex === (totalMaterialsCount - 1) ? 'disabled' : ''}>
                             Course Selanjutnya
                             <ion-icon name="chevron-forward-outline" class="ml-2"></ion-icon>
                         </button>
@@ -407,8 +707,17 @@ class Materi {
                 return;
             }
 
-            const weekData = this.getCurrentWeekData();
-            const currentCourse = weekData.materials[this.currentCourseIndex];
+            const currentUserStr = localStorage.getItem('currentUser');
+            let materials = this.getCurrentWeekData().materials;
+            
+            if (this.currentWeek === 4 && currentUserStr) {
+                try {
+                    const currentUser = JSON.parse(currentUserStr);
+                    materials = await this.getFilteredWeek4Courses(currentUser.email);
+                } catch (e) {}
+            }
+            
+            const currentCourse = materials[this.currentCourseIndex];
             
             await this.auth.recordCourseCompletion(
                 parseInt(this.currentWeek), 
@@ -422,6 +731,29 @@ class Materi {
             console.error('Error marking as complete:', error);
             this.showNotification('Gagal menandai course: ' + error.message, 'error');
         }
+    }
+
+    static async rerenderCourseContent() {
+        const currentUserStr = localStorage.getItem('currentUser');
+        let materialsToRender = this.getCurrentWeekData().materials;
+        
+        if (this.currentWeek === 4 && currentUserStr) {
+            try {
+                const currentUser = JSON.parse(currentUserStr);
+                materialsToRender = await this.getFilteredWeek4Courses(currentUser.email);
+            } catch (e) {}
+        }
+        
+        const progress = await this.auth.getCourseProgress();
+        const weekProgress = progress[this.currentWeek] || {};
+        const course = materialsToRender[this.currentCourseIndex];
+
+        const container = document.querySelector('.lg\\:col-span-3 > div');
+        if (container) {
+            container.innerHTML = this.renderCourseContent(course, weekProgress, materialsToRender.length);
+        }
+
+        this.updateCourseList();
     }
 
     static updateCourseList() {
@@ -444,10 +776,10 @@ class Materi {
                     indicator.innerHTML = '✓';
                 } else if (index === this.currentCourseIndex) {
                     indicator.className = 'w-8 h-8 rounded-full flex items-center justify-center bg-blue-500 text-white';
-                    indicator.innerHTML = (index + 1).toString();
+                    indicator.innerHTML = indicator.textContent;
                 } else {
                     indicator.className = 'w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-600';
-                    indicator.innerHTML = (index + 1).toString();
+                    indicator.innerHTML = indicator.textContent;
                 }
             }
         });
@@ -459,8 +791,11 @@ class Materi {
     }
 
     static showNotification(message, type = 'info') {
+        // Hapus notifikasi lama
+        document.querySelectorAll('.notification').forEach(el => el.remove());
+        
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        notification.className = `notification fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
             type === 'success' ? 'bg-green-500 text-white' :
             type === 'error' ? 'bg-red-500 text-white' :
             'bg-blue-500 text-white'
@@ -480,7 +815,6 @@ class Materi {
         }, 3000);
     }
 
-    // Method untuk mengubah unlocked week secara manual (untuk admin)
     static setUnlockedWeekForRegular(newWeek) {
         this.unlockedWeekForRegular = newWeek;
         this.showNotification(`Pekan 1-${newWeek} sekarang terbuka untuk regular user`, 'info');
@@ -502,6 +836,16 @@ style.textContent = `
         left: 0;
         width: 100%;
         height: 100%;
+    }
+    
+    .course-option:hover {
+        transform: translateY(-1px);
+        transition: transform 0.2s;
+    }
+    
+    .modal-save-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 `;
 document.head.appendChild(style);

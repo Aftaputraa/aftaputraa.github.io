@@ -6,12 +6,18 @@ class Sinkronus {
     static isInitialized = false;
 
     static async render() {
-        // Data sessions - hanya disimpan sekali
+        // Data sessions - sekarang termasuk CGC#1
         const sessionsData = {
             onboarding_2: {
                 title: "Onboarding Kampus Riset Angkatan 2",
                 videos: [
                     { title: "Onboarding Kampus Riset Angkatan 2", youtube_url: "https://www.youtube.com/embed/gWiYMp4nOR8" }
+                ]
+            },
+            coaching_clinic: {
+                title: "Coaching Group Clinic",
+                videos: [
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" }
                 ]
             }
         };
@@ -33,6 +39,10 @@ class Sinkronus {
                             <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'onboarding_2' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
                                     data-tab="onboarding_2">
                                 Onboarding Batch 2
+                            </button>
+                            <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'coaching_clinic' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
+                                    data-tab="coaching_clinic">
+                                Coaching Group Clinic
                             </button>
                         </div>
                     </div>
@@ -284,6 +294,12 @@ class Sinkronus {
                 title: "Onboarding Kampus Riset Angkatan 2",
                 videos: [
                     { title: "Onboarding Kampus Riset Angkatan 2", youtube_url: "https://www.youtube.com/embed/gWiYMp4nOR8" }
+                ]
+            },
+            coaching_clinic: {
+                title: "Coaching Group Clinic",
+                videos: [
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" }
                 ]
             }
         };

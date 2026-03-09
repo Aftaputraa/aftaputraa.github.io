@@ -3,7 +3,7 @@ import Auth from '../auth.js';
 import { supabase } from '../config/supabase.js';
 
 class Materi {
-    static currentWeek = 7;
+    static currentWeek = 10;
     static currentCourseIndex = 0;
     static currentVideoIndex = 0;
     static auth = new Auth();
@@ -22,7 +22,7 @@ class Materi {
     ];
     
     // Variable untuk menentukan week mana yang terbuka untuk regular user
-    static unlockedWeekForRegular = 7;
+    static unlockedWeekForRegular = 10;
     
     // Flag untuk menandai apakah user whitelist
     static isWhitelisted = false;

@@ -13,7 +13,9 @@ class Attendance {
         const cgcSessions = [
             { number: 1, title: "Coaching Group Clinic #1" },
             { number: 2, title: "Coaching Group Clinic #2" },
-            { number: 3, title: "Coaching Group Clinic #3" }
+            { number: 3, title: "Coaching Group Clinic #3" },
+            { number: 4, title: "Coaching Group Clinic #4 Part 1" },
+            { number: 5, title: "Coaching Group Clinic #4 Part 2" }
         ];
 
         return `

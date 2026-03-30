@@ -6,7 +6,7 @@ class Sinkronus {
     static isInitialized = false;
 
     static async render() {
-        // Data sessions - sekarang termasuk CGC#1
+        // Data sessions - sekarang termasuk CGC#1 sampai CGC#4
         const sessionsData = {
             onboarding_2: {
                 title: "Onboarding Kampus Riset Angkatan 2",
@@ -17,7 +17,11 @@ class Sinkronus {
             coaching_clinic: {
                 title: "Coaching Group Clinic",
                 videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" }
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" },
+                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/6kc5Uooce5c" },
+                    { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "https://www.youtube.com/embed/qguIc6JEKLY" },
+                    { title: "CGC#4 Part 1: Coaching Group Clinic 4 Part 1", youtube_url: "https://www.youtube.com/embed/K0OnWH1-LEk" },
+                    { title: "CGC#4 Part 2: Coaching Group Clinic 4 Part 2", youtube_url: "https://www.youtube.com/embed/sSa_H5dGtQ0" }
                 ]
             }
         };
@@ -214,7 +218,7 @@ class Sinkronus {
             videoPlayer.src = currentVideo.youtube_url;
         }
         
-        // ✅ PERBAIKAN: Update judul video dan sesi
+        // Update judul video dan sesi
         const videoTitleElement = document.getElementById('current-video-title');
         const sessionTitleElement = document.getElementById('current-session-title');
         
@@ -299,7 +303,11 @@ class Sinkronus {
             coaching_clinic: {
                 title: "Coaching Group Clinic",
                 videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" }
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" },
+                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/6kc5Uooce5c" },
+                    { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "https://www.youtube.com/embed/qguIc6JEKLY" },
+                    { title: "CGC#4 Part 1: Coaching Group Clinic 4 Part 1", youtube_url: "https://www.youtube.com/embed/K0OnWH1-LEk" },
+                    { title: "CGC#4 Part 2: Coaching Group Clinic 4 Part 2", youtube_url: "https://www.youtube.com/embed/sSa_H5dGtQ0" }
                 ]
             }
         };

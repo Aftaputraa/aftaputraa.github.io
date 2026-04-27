@@ -4,26 +4,34 @@ import { getWeekData } from '../../data/weekData.js';
 class Attendance {
     static activeTab = 'live-sessions';
     static auth = new Auth();
+    
+    // Flag untuk menampilkan overlay (ubah ke false nanti untuk menampilkan konten)
+    static showComingSoonOverlay = true;
 
-    static async render() {
-        if (!this.auth.isAuthenticated()) {
-            return '<div class="p-8 text-center text-red-600">Silakan login terlebih dahulu</div>';
-        }
-
-        const cgcSessions = [
+    // Template data untuk Angkatan 3 (isi nanti)
+    static getCGCSessions() {
+        return [
             { number: 1, title: "Coaching Group Clinic #1" },
             { number: 2, title: "Coaching Group Clinic #2" },
             { number: 3, title: "Coaching Group Clinic #3" },
             { number: 4, title: "Coaching Group Clinic #4 Part 1" },
             { number: 5, title: "Coaching Group Clinic #4 Part 2" }
         ];
+    }
 
-        return `
+    static async render() {
+        if (!this.auth.isAuthenticated()) {
+            return '<div class="p-8 text-center text-red-600">Silakan login terlebih dahulu</div>';
+        }
+
+        const cgcSessions = this.getCGCSessions();
+
+        const mainContent = `
             <div class="max-w-6xl mx-auto">
                 <div class="bg-white shadow-lg rounded-xl md:rounded-2xl overflow-hidden">
                     <div class="p-4 md:p-6 border-b border-gray-200">
                         <h1 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">Presensi & Progress</h1>
-                        <p class="text-gray-600 mt-1 text-sm md:text-base">Form presensi sesi live dan penyelesaian e-course</p>
+                        <p class="text-gray-600 mt-1 text-sm md:text-base">Form presensi sesi live dan penyelesaian e-course - Angkatan 3</p>
                     </div>
                     
                     <div class="border-b border-gray-200 bg-gray-50">
@@ -41,9 +49,38 @@ class Attendance {
                 </div>
             </div>
         `;
+
+        // Jika overlay aktif, bungkus dengan overlay
+        if (this.showComingSoonOverlay) {
+            return `
+                <div class="position-relative" style="position: relative;">
+                    ${mainContent}
+                    <div class="coming-soon-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; border-radius: 1rem;">
+                        <div class="text-center p-8">
+                            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                                <ion-icon name="calendar-outline" class="text-4xl text-blue-600"></ion-icon>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-3">Coming Soon</h2>
+                            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                                Fitur presensi dan progress untuk Angkatan 3 akan segera tersedia.
+                                Pantau terus halaman ini untuk informasi terbaru.
+                            </p>
+                            <div class="inline-flex items-center space-x-2 bg-gray-100 rounded-lg px-4 py-2">
+                                <ion-icon name="information-circle-outline" class="text-gray-500"></ion-icon>
+                                <span class="text-sm text-gray-600">Fitur akan aktif sesuai jadwal program</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        return mainContent;
     }
 
     static async renderLiveSessions(cgcSessions) {
+        if (this.showComingSoonOverlay) return '<div></div>';
+        
         const currentAttendance = {};
         for (const session of cgcSessions) {
             currentAttendance[session.number] = await this.auth.hasAttendedSession(session.number);
@@ -97,6 +134,8 @@ class Attendance {
     }
 
     static async renderAttendanceHistory() {
+        if (this.showComingSoonOverlay) return '<div></div>';
+        
         try {
             const attendance = await this.auth.getSessionAttendance();
             if (!attendance || attendance.length === 0) {
@@ -123,7 +162,7 @@ class Attendance {
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.attended ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                                 ${item.attended ? 'Hadir' : 'Tidak Hadir'}
                                             </span>
-                                        </td>
+                                         </td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -137,6 +176,8 @@ class Attendance {
     }
 
     static async renderECourse() {
+        if (this.showComingSoonOverlay) return '<div></div>';
+        
         try {
             const weekData = getWeekData();
             const progress = await this.auth.getCourseProgress();
@@ -201,7 +242,10 @@ class Attendance {
     }
 
     static async init() {
+        // Event listener dengan pengecekan overlay
         document.addEventListener('click', (e) => {
+            if (this.showComingSoonOverlay) return;
+            
             if (e.target.closest('.tab-button')) {
                 const tabName = e.target.closest('.tab-button').dataset.tab;
                 this.switchTab(tabName);
@@ -225,9 +269,18 @@ class Attendance {
                 this.saveWeekProgress(parseInt(button.dataset.week));
             }
         });
+        
+        // Render content
+        const content = await this.render();
+        const contentElement = document.getElementById('content');
+        if (contentElement) {
+            contentElement.innerHTML = content;
+        }
     }
 
     static async switchTab(tabName) {
+        if (this.showComingSoonOverlay) return;
+        
         this.activeTab = tabName;
         const content = await this.render();
         document.getElementById('content').innerHTML = content;
@@ -235,6 +288,8 @@ class Attendance {
     }
 
     static async recordAttendance(sessionNumber, sessionTitle, attended) {
+        if (this.showComingSoonOverlay) return;
+        
         try {
             await this.auth.recordSessionAttendance(sessionNumber, sessionTitle, attended);
             this.showNotification(`Presensi untuk ${sessionTitle} berhasil dicatat!`, 'success');
@@ -245,6 +300,8 @@ class Attendance {
     }
 
     static async saveWeekProgress(weekNumber) {
+        if (this.showComingSoonOverlay) return;
+        
         try {
             const checkboxes = document.querySelectorAll(`.course-checkbox[data-week="${weekNumber}"]:checked`);
             const completedCourses = Array.from(checkboxes).map(cb => cb.dataset.course);

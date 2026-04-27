@@ -22,7 +22,7 @@ class Materi {
     ];
     
     // Variable untuk menentukan week mana yang terbuka untuk regular user
-    static unlockedWeekForRegular = 10;
+    static unlockedWeekForRegular = 1;
     
     // Flag untuk menandai apakah user whitelist
     static isWhitelisted = false;

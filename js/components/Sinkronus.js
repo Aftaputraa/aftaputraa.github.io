@@ -1,48 +1,53 @@
 import { sessionAttendanceService } from '../config/supabase.js';
 
 class Sinkronus {
-    static currentTab = 'onboarding_2';
+    static currentTab = 'onboarding_3';  // Diubah ke angkatan 3
     static currentVideoIndex = 0;
     static isInitialized = false;
+    
+    // Flag untuk menampilkan overlay (ubah ke false nanti untuk menampilkan konten)
+    static showComingSoonOverlay = true;
 
-    static async render() {
-        // Data sessions - sekarang termasuk CGC#1 sampai CGC#4
-        const sessionsData = {
-            onboarding_2: {
-                title: "Onboarding Kampus Riset Angkatan 2",
+    // Data sessions untuk Angkatan 3 (template, isi nanti)
+    static getSessionsData() {
+        return {
+            onboarding_3: {
+                title: "Onboarding Kampus Riset Angkatan 3",
                 videos: [
-                    { title: "Onboarding Kampus Riset Angkatan 2", youtube_url: "https://www.youtube.com/embed/gWiYMp4nOR8" }
+                    { title: "Onboarding Kampus Riset Angkatan 3", youtube_url: "#" }
                 ]
             },
             coaching_clinic: {
                 title: "Coaching Group Clinic",
                 videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" },
-                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/6kc5Uooce5c" },
-                    { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "https://www.youtube.com/embed/qguIc6JEKLY" },
-                    { title: "CGC#4 Part 1: Coaching Group Clinic 4 Part 1", youtube_url: "https://www.youtube.com/embed/K0OnWH1-LEk" },
-                    { title: "CGC#4 Part 2: Coaching Group Clinic 4 Part 2", youtube_url: "https://www.youtube.com/embed/sSa_H5dGtQ0" }
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "#" },
+                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "#" },
+                    { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "#" },
+                    { title: "CGC#4: Coaching Group Clinic 4", youtube_url: "#" }
                 ]
             }
         };
+    }
 
+    static async render() {
+        const sessionsData = this.getSessionsData();
         const currentSession = sessionsData[this.currentTab];
         const currentVideo = currentSession.videos[this.currentVideoIndex];
 
-        return `
+        const mainContent = `
             <div class="max-w-6xl mx-auto">
                 <div class="bg-white shadow-lg rounded-xl md:rounded-2xl overflow-hidden">
                     <div class="p-4 md:p-6 border-b border-gray-200">
                         <h1 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">Rekaman Sesi Sinkronus</h1>
-                        <p class="text-gray-600 mt-1 text-sm md:text-base">Rekaman sesi live dan coaching clinic</p>
+                        <p class="text-gray-600 mt-1 text-sm md:text-base">Rekaman sesi live dan coaching clinic - Angkatan 3</p>
                     </div>
                     
                     <!-- Tab Navigation -->
                     <div class="border-b border-gray-200 bg-gray-50">
                         <div class="flex overflow-x-auto">
-                            <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'onboarding_2' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
-                                    data-tab="onboarding_2">
-                                Onboarding Batch 2
+                            <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'onboarding_3' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
+                                    data-tab="onboarding_3">
+                                Onboarding Batch 3
                             </button>
                             <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'coaching_clinic' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
                                     data-tab="coaching_clinic">
@@ -51,7 +56,7 @@ class Sinkronus {
                         </div>
                     </div>
                     
-                    <div class="p-4 md:p-6">
+                    <div class="p-4 md:p-6 position-relative">
                         <!-- Session Info & Attendance -->
                         <div class="mb-6 bg-blue-50 rounded-xl p-4 md:p-6 border border-blue-200">
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -126,6 +131,33 @@ class Sinkronus {
                 </div>
             </div>
         `;
+
+        // Jika overlay aktif, bungkus dengan overlay
+        if (this.showComingSoonOverlay) {
+            return `
+                <div class="position-relative" style="position: relative;">
+                    ${mainContent}
+                    <div class="coming-soon-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; border-radius: 1rem;">
+                        <div class="text-center p-8">
+                            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                                <ion-icon name="calendar-outline" class="text-4xl text-blue-600"></ion-icon>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-3">Coming Soon</h2>
+                            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                                Sesi sinkronus untuk Angkatan 3 akan segera diumumkan. 
+                                Pantau terus halaman ini untuk informasi jadwal terbaru.
+                            </p>
+                            <div class="inline-flex items-center space-x-2 bg-gray-100 rounded-lg px-4 py-2">
+                                <ion-icon name="information-circle-outline" class="text-gray-500"></ion-icon>
+                                <span class="text-sm text-gray-600">Jadwal akan diinfokan lebih lanjut</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        return mainContent;
     }
 
     static async init() {
@@ -137,6 +169,12 @@ class Sinkronus {
             this.isInitialized = true;
         }
         
+        const content = await this.render();
+        const contentElement = document.getElementById('content');
+        if (contentElement) {
+            contentElement.innerHTML = content;
+        }
+        
         this.updateVideoList();
         this.updateNavigationButtons();
     }
@@ -144,7 +182,7 @@ class Sinkronus {
     static setupTabNavigation() {
         document.addEventListener('click', (e) => {
             const tabButton = e.target.closest('.tab-button');
-            if (tabButton) {
+            if (tabButton && !this.showComingSoonOverlay) {
                 const tabName = tabButton.dataset.tab;
                 this.switchTab(tabName);
             }
@@ -152,11 +190,16 @@ class Sinkronus {
     }
 
     static async switchTab(tabName) {
+        if (this.showComingSoonOverlay) return;
+        
         this.currentTab = tabName;
         this.currentVideoIndex = 0;
         
         const content = await this.render();
-        document.getElementById('content').innerHTML = content;
+        const contentElement = document.getElementById('content');
+        if (contentElement) {
+            contentElement.innerHTML = content;
+        }
         
         this.updateVideoList();
         this.updateNavigationButtons();
@@ -164,6 +207,8 @@ class Sinkronus {
 
     static setupVideoNavigation() {
         document.addEventListener('click', (e) => {
+            if (this.showComingSoonOverlay) return;
+            
             const prevButton = e.target.closest('.prev-video');
             const nextButton = e.target.closest('.next-video');
             
@@ -183,6 +228,8 @@ class Sinkronus {
 
     static setupVideoList() {
         document.addEventListener('click', (e) => {
+            if (this.showComingSoonOverlay) return;
+            
             const videoItem = e.target.closest('.video-item');
             if (videoItem) {
                 e.preventDefault();
@@ -195,30 +242,30 @@ class Sinkronus {
 
     static setupAttendance() {
         document.addEventListener('click', async (e) => {
+            if (this.showComingSoonOverlay) return;
+            
             if (e.target.closest('.attend-session-btn')) {
                 const button = e.target.closest('.attend-session-btn');
                 const sessionTitle = button.dataset.sessionTitle;
-                
                 await this.recordAttendance(sessionTitle);
             }
         });
     }
 
     static switchVideo(videoIndex) {
+        if (this.showComingSoonOverlay) return;
+        
         this.currentVideoIndex = videoIndex;
         
-        // Update video player
         const sessionsData = this.getSessionsData();
         const currentSession = sessionsData[this.currentTab];
         const currentVideo = currentSession.videos[this.currentVideoIndex];
         
-        // Update iframe source
         const videoPlayer = document.getElementById('main-video-player');
         if (videoPlayer) {
             videoPlayer.src = currentVideo.youtube_url;
         }
         
-        // Update judul video dan sesi
         const videoTitleElement = document.getElementById('current-video-title');
         const sessionTitleElement = document.getElementById('current-session-title');
         
@@ -229,20 +276,21 @@ class Sinkronus {
             sessionTitleElement.textContent = currentSession.title;
         }
         
-        // Update video list active state
         this.updateVideoList();
-        
-        // Update navigation buttons
         this.updateNavigationButtons();
     }
 
     static previousVideo() {
+        if (this.showComingSoonOverlay) return;
+        
         if (this.currentVideoIndex > 0) {
             this.switchVideo(this.currentVideoIndex - 1);
         }
     }
 
     static nextVideo() {
+        if (this.showComingSoonOverlay) return;
+        
         const sessionsData = this.getSessionsData();
         if (this.currentVideoIndex < sessionsData[this.currentTab].videos.length - 1) {
             this.switchVideo(this.currentVideoIndex + 1);
@@ -266,6 +314,8 @@ class Sinkronus {
     }
 
     static updateVideoList() {
+        if (this.showComingSoonOverlay) return;
+        
         const videoItems = document.querySelectorAll('.video-item');
         videoItems.forEach((item, index) => {
             if (index === this.currentVideoIndex) {
@@ -279,6 +329,8 @@ class Sinkronus {
     }
 
     static updateNavigationButtons() {
+        if (this.showComingSoonOverlay) return;
+        
         const sessionsData = this.getSessionsData();
         const prevButton = document.querySelector('.prev-video');
         const nextButton = document.querySelector('.next-video');
@@ -290,27 +342,6 @@ class Sinkronus {
         if (nextButton) {
             nextButton.disabled = this.currentVideoIndex === sessionsData[this.currentTab].videos.length - 1;
         }
-    }
-
-    static getSessionsData() {
-        return {
-            onboarding_2: {
-                title: "Onboarding Kampus Riset Angkatan 2",
-                videos: [
-                    { title: "Onboarding Kampus Riset Angkatan 2", youtube_url: "https://www.youtube.com/embed/gWiYMp4nOR8" }
-                ]
-            },
-            coaching_clinic: {
-                title: "Coaching Group Clinic",
-                videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/WEe7vJ08mZ8" },
-                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/6kc5Uooce5c" },
-                    { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "https://www.youtube.com/embed/qguIc6JEKLY" },
-                    { title: "CGC#4 Part 1: Coaching Group Clinic 4 Part 1", youtube_url: "https://www.youtube.com/embed/K0OnWH1-LEk" },
-                    { title: "CGC#4 Part 2: Coaching Group Clinic 4 Part 2", youtube_url: "https://www.youtube.com/embed/sSa_H5dGtQ0" }
-                ]
-            }
-        };
     }
 
     static hashString(str) {

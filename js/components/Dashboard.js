@@ -90,7 +90,7 @@ class Dashboard {
                                     <p class="text-gray-600 mb-3 md:mb-4 leading-relaxed text-sm md:text-base">
                                         Download guidebook untuk memahami alur program, timeline, dan resources yang tersedia di Kampus Riset.
                                     </p>
-                                    <a href="https://hcelerate.id/wp-content/uploads/2026/01/Guidebook-Kampus-Riset-Angkatan-2-Hcelerate.pdf" 
+                                    <a href="https://hcelerate.id/wp-content/uploads/2026/05/Guidebook-Kampus-Riset-Bacth-3.pdf" 
                                        target="_blank" 
                                        class="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg hover:bg-blue-700 transition font-medium text-sm md:text-base">
                                         <ion-icon name="download-outline"></ion-icon>

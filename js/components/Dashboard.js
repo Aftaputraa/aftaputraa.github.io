@@ -100,7 +100,7 @@ class Dashboard {
                                 <div class="lg:w-1/3">
                                     <div class="bg-white rounded-lg p-3 md:p-4 border border-gray-200">
                                         <div class="pdf-wrapper">
-                                            <iframe src="https://hcelerate.id/wp-content/uploads/2026/01/Guidebook-Kampus-Riset-Angkatan-2-Hcelerate.pdf" 
+                                            <iframe src="https://hcelerate.id/wp-content/uploads/2026/05/Guidebook-Kampus-Riset-Bacth-3.pdf" 
                                                     frameborder="0">
                                             </iframe>
                                         </div>

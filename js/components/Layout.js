@@ -64,8 +64,7 @@ class Layout {
             { tab: 'dashboard', icon: 'home-outline', label: 'Dashboard' },
             { tab: 'materi', icon: 'book-outline', label: 'Materi Asinkron' },
             // { tab: 'template', icon: 'document-text-outline', label: 'Template Penulisan' }, // HAPUS
-            { tab: 'jurnal', icon: 'document-text-outline', label: 'List Jurnal' },
-            { tab: 'final', icon: 'checkmark-done-outline', label: 'Final Assignment' }, // TETAP ADA
+            { tab: 'final', icon: 'checkmark-done-outline', label: 'List Jurnal & Final Assignment' },
             { tab: 'sinkronus', icon: 'videocam-outline', label: 'Sesi Sinkronus' },
             { tab: 'attendance', icon: 'calendar-outline', label: 'Presensi' }
         ];

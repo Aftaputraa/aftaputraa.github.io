@@ -64,7 +64,7 @@ class Layout {
             { tab: 'dashboard', icon: 'home-outline', label: 'Dashboard' },
             { tab: 'materi', icon: 'book-outline', label: 'Materi Asinkron' },
             // { tab: 'template', icon: 'document-text-outline', label: 'Template Penulisan' }, // HAPUS
-            { tab: 'final', icon: 'checkmark-done-outline', label: 'List Jurnal & Final Assignment' },
+            { tab: 'final', icon: 'checkmark-done-outline', label: 'List Jurnal' },
             { tab: 'sinkronus', icon: 'videocam-outline', label: 'Sesi Sinkronus' },
             { tab: 'attendance', icon: 'calendar-outline', label: 'Presensi' }
         ];

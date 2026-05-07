@@ -7,7 +7,6 @@ class Layout {
     }
 
     async render() {
-        // HAPUS BARIS INI: await this.auth.init();
         const user = this.auth.getCurrentUser();
         
         document.getElementById('app').innerHTML = `
@@ -64,8 +63,9 @@ class Layout {
         const navItems = [
             { tab: 'dashboard', icon: 'home-outline', label: 'Dashboard' },
             { tab: 'materi', icon: 'book-outline', label: 'Materi Asinkron' },
-            { tab: 'template', icon: 'document-text-outline', label: 'Template Penulisan' },
-            { tab: 'final', icon: 'checkmark-done-outline', label: 'List Jurnal' },
+            // { tab: 'template', icon: 'document-text-outline', label: 'Template Penulisan' }, // HAPUS
+            { tab: 'jurnal', icon: 'checkmark-done-outline', label: 'List Jurnal' }, // TETAP ADA
+            // { tab: 'final', icon: 'checkmark-done-outline', label: 'Final Assignment' }, // HAPUS
             { tab: 'sinkronus', icon: 'videocam-outline', label: 'Sesi Sinkronus' },
             { tab: 'attendance', icon: 'calendar-outline', label: 'Presensi' }
         ];
@@ -81,29 +81,41 @@ class Layout {
 
     setupEventListeners() {
         // Toggle sidebar for mobile
-        document.getElementById('toggleSidebar').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('hidden');
-            overlay.classList.toggle('active');
-        });
+        const toggleBtn = document.getElementById('toggleSidebar');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                if (sidebar) sidebar.classList.toggle('hidden');
+                if (overlay) overlay.classList.toggle('active');
+            });
+        }
 
         // Close sidebar when clicking on overlay
-        document.getElementById('mobileOverlay').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.add('hidden');
-            document.getElementById('mobileOverlay').classList.remove('active');
-        });
+        const overlay = document.getElementById('mobileOverlay');
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.add('hidden');
+                overlay.classList.remove('active');
+            });
+        }
 
         // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            this.auth.logout();
-        });
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                this.auth.logout();
+            });
+        }
 
         // Handle window resize
         window.addEventListener('resize', () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
             if (window.innerWidth >= 768) {
-                document.getElementById('sidebar').classList.remove('hidden');
-                document.getElementById('mobileOverlay').classList.remove('active');
+                if (sidebar) sidebar.classList.remove('hidden');
+                if (overlay) overlay.classList.remove('active');
             }
         });
     }

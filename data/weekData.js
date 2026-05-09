@@ -145,7 +145,7 @@ const weekData = {
                 description: "Pelajari teknik menulis proposal penelitian dengan memanfaatkan ChatGPT dan Elicit",
                 download: {
                     materi: "https://drive.google.com/drive/folders/1mHV8MozN84N2HFrrgXZB5uJnEKd_Hiqs?usp=drive_link",
-                    notulensi: "https://drive.google.com/file/d/1ejUT9sB1qB4PzpwJmjuHx1r47NyhNd4N/view?usp=drive_link"
+                    notulensi: "https://drive.google.com/drive/folders/1pNlH9aCCbH-kWhDZ5EaEIBtb7os9mlX1?usp=drive_link"
                 }
             },
             {
@@ -175,8 +175,8 @@ const weekData = {
                 ],
                 description: "Pelajari riset cepat dan akurat menggunakan SciSpace dan Zotero",
                 download: {
-                    materi: "https://drive.google.com/drive/folders/1o-fUbs6AFYctU6VLmnn25WqCdBKS1bY3?usp=drive_link",
-                    notulensi: "https://drive.google.com/file/d/1aMzdk16uYfzQkQAw52RXRjK2p_lcjJTR/view?usp=drive_link"
+                    materi: "https://drive.google.com/drive/folders/1Krg66TPbSdxvqYiGRLEEy2BeIRyN-86v?usp=drive_link",
+                    notulensi: "https://drive.google.com/drive/folders/13Lgb2Il6bTEfuR4nKaze7Zow8Zy4ULvQ?usp=drive_link"
                 }
             },
             {
@@ -206,8 +206,8 @@ const weekData = {
                 ],
                 description: "Pelajari teknik literature review terarah menggunakan WATASE dan AI",
                 download: {
-                    materi: "#",
-                    notulensi: "https://drive.google.com/file/d/1FfzvaaK2L2V8IsEbre9M0Hlt-fWmVvCd/view?usp=drive_link"
+                    materi: "https://drive.google.com/drive/folders/1Ui12M9PRaThAt5n7DBOTTpAX_x5i_Wbl?usp=drive_link",
+                    notulensi: "https://drive.google.com/drive/folders/10GZpG37r7Uhk_AH1HAVnM04O01tyzk12?usp=drive_link"
                 }
             },
         ]

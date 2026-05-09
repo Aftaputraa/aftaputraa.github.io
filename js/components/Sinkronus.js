@@ -56,7 +56,7 @@ class Sinkronus {
                         </div>
                     </div>
                     
-                    <div class="p-4 md:p-6 position-relative">
+                    <div class="p-4 md:p-6">
                         <!-- Session Info & Attendance -->
                         <div class="mb-6 bg-blue-50 rounded-xl p-4 md:p-6 border border-blue-200">
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -132,24 +132,24 @@ class Sinkronus {
             </div>
         `;
 
-        // Jika overlay aktif, bungkus dengan overlay
+        // Jika overlay aktif, bungkus dengan overlay yang tidak mengganggu layout
         if (this.showComingSoonOverlay) {
             return `
-                <div class="position-relative" style="position: relative;">
+                <div class="sinkronus-wrapper" style="position: relative; min-height: 500px;">
                     ${mainContent}
-                    <div class="coming-soon-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; border-radius: 1rem;">
-                        <div class="text-center p-8">
-                            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
-                                <ion-icon name="calendar-outline" class="text-4xl text-blue-600"></ion-icon>
+                    <div class="coming-soon-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10; border-radius: 1rem; pointer-events: auto;">
+                        <div class="text-center p-4 md:p-8">
+                            <div class="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-blue-100 rounded-full mb-4">
+                                <ion-icon name="calendar-outline" class="text-3xl md:text-4xl text-blue-600"></ion-icon>
                             </div>
-                            <h2 class="text-2xl font-bold text-gray-900 mb-3">Coming Soon</h2>
-                            <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                            <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">Coming Soon</h2>
+                            <p class="text-sm md:text-base text-gray-600 mb-4 md:mb-6 max-w-md mx-auto px-2">
                                 Sesi sinkronus untuk Angkatan 3 akan segera diumumkan. 
                                 Pantau terus halaman ini untuk informasi jadwal terbaru.
                             </p>
-                            <div class="inline-flex items-center space-x-2 bg-gray-100 rounded-lg px-4 py-2">
-                                <ion-icon name="information-circle-outline" class="text-gray-500"></ion-icon>
-                                <span class="text-sm text-gray-600">Jadwal akan diinfokan lebih lanjut</span>
+                            <div class="inline-flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-1.5 md:px-4 md:py-2">
+                                <ion-icon name="information-circle-outline" class="text-gray-500 text-sm md:text-base"></ion-icon>
+                                <span class="text-xs md:text-sm text-gray-600">Jadwal akan diinfokan lebih lanjut</span>
                             </div>
                         </div>
                     </div>
@@ -181,6 +181,18 @@ class Sinkronus {
 
     static setupTabNavigation() {
         document.addEventListener('click', (e) => {
+            // Cek apakah klik terjadi di dalam overlay
+            const overlay = document.querySelector('.coming-soon-overlay');
+            if (overlay) {
+                // Jika overlay ada, cegah interaksi dengan tab
+                const isClickInsideOverlay = overlay.contains(e.target);
+                if (isClickInsideOverlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+            }
+            
             const tabButton = e.target.closest('.tab-button');
             if (tabButton && !this.showComingSoonOverlay) {
                 const tabName = tabButton.dataset.tab;
@@ -207,6 +219,17 @@ class Sinkronus {
 
     static setupVideoNavigation() {
         document.addEventListener('click', (e) => {
+            // Cek apakah klik terjadi di dalam overlay
+            const overlay = document.querySelector('.coming-soon-overlay');
+            if (overlay) {
+                const isClickInsideOverlay = overlay.contains(e.target);
+                if (isClickInsideOverlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+            }
+            
             if (this.showComingSoonOverlay) return;
             
             const prevButton = e.target.closest('.prev-video');
@@ -228,6 +251,17 @@ class Sinkronus {
 
     static setupVideoList() {
         document.addEventListener('click', (e) => {
+            // Cek apakah klik terjadi di dalam overlay
+            const overlay = document.querySelector('.coming-soon-overlay');
+            if (overlay) {
+                const isClickInsideOverlay = overlay.contains(e.target);
+                if (isClickInsideOverlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+            }
+            
             if (this.showComingSoonOverlay) return;
             
             const videoItem = e.target.closest('.video-item');
@@ -242,6 +276,17 @@ class Sinkronus {
 
     static setupAttendance() {
         document.addEventListener('click', async (e) => {
+            // Cek apakah klik terjadi di dalam overlay
+            const overlay = document.querySelector('.coming-soon-overlay');
+            if (overlay) {
+                const isClickInsideOverlay = overlay.contains(e.target);
+                if (isClickInsideOverlay) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+            }
+            
             if (this.showComingSoonOverlay) return;
             
             if (e.target.closest('.attend-session-btn')) {

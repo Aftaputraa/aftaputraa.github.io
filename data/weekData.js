@@ -20,8 +20,8 @@ const weekData = {
                 ],
                 description: "Pelajari strategi menulis artikel untuk jurnal terindeks Scopus dan Web of Science",
                 download: {
-                    materi: "https://drive.google.com/file/d/10bCFViy8CgLCXjg_VHknhjYq4UkGV8ib/view?usp=drive_link",
-                    notulensi: "https://drive.google.com/file/d/12er8bIYVQcXpHX8zlzPdd5gOiLLZDNIJ/view?usp=drive_link"
+                    materi: "https://drive.google.com/drive/folders/1Up47P089_P-GrgTcWUdqrdOarYINul6E?usp=drive_link",
+                    notulensi: "https://drive.google.com/drive/folders/1Ww8ufLGhl0xS7KgG8BpuNXMc5P0EdnTQ?usp=drive_link"
                 }
             },
             {
@@ -51,8 +51,8 @@ const weekData = {
                 ],
                 description: "Pelajari cara menemukan research gap dan novelty menggunakan teknologi AI",
                 download: {
-                    materi: "https://drive.google.com/drive/folders/1SI-xYLnoH7zTsrPb-UO2CFJsl-yJqlm9?usp=sharing",
-                    notulensi: "https://drive.google.com/drive/folders/1B_Ns8woxbNGSGHrKwab5XeQ8VFN4CseZ?usp=sharing"
+                    materi: "https://drive.google.com/drive/folders/1Cb5bo-xJKBIldugZbovSp9OEL2wkWxjt?usp=drive_link",
+                    notulensi: "https://drive.google.com/drive/folders/108QRpF5OlRrTjJhqhh2s7FD4i7y6yU3h?usp=drive_link"
                 }
             },
             {
@@ -82,8 +82,8 @@ const weekData = {
                 ],
                 description: "Pelajari strategi memanfaatkan AI gratis untuk kebutuhan akademik dengan hasil profesional",
                 download: {
-                    materi: "https://drive.google.com/file/d/1l1rgHJ9-gaBxLzPtaB4g3Xjn3tFwHLxO/view?usp=drive_link",
-                    notulensi: "#"
+                    materi: "https://drive.google.com/drive/folders/18PxZVIU56AZI9V_xpvXyF-nFqM-iiUV6?usp=drive_link",
+                    notulensi: "https://drive.google.com/drive/folders/1IQj3bxNUOqDWmeQyoKhjf0LDhFNpm-m6?usp=drive_link"
                 }
             },
             {
@@ -118,8 +118,8 @@ const weekData = {
                 ],
                 description: "Tingkatkan produktivitas menulis artikel untuk jurnal SINTA dan Scopus",
                 download: {
-                    materi: "https://drive.google.com/drive/folders/1xnlg1TNdDBokwA01JE6sd2vfMnHIKEGo?usp=drive_link",
-                    notulensi: "https://drive.google.com/drive/folders/1m4Y0Ki4PbHlQylKqcGBIHLftUtwWKFZN?usp=drive_link"
+                    materi: "https://drive.google.com/drive/folders/1unot7FbrB-MQDK33ryk8kw9EhAqs4_K4?usp=drive_link",
+                    notulensi: "https://drive.google.com/drive/folders/1RI_8AZTzeqUcYkHi7eXWmypRZCfp5NtS?usp=drive_link"
                 }
             }
         ]

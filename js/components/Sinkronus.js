@@ -20,9 +20,9 @@ class Sinkronus {
             coaching_clinic: {
                 title: "Coaching Group Clinic",
                 videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/tGZaUDvndzM" } // Ganti # dengan embed URL
-                    // { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "#" }, // Dikomentari karena tidak ada
-                    // { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "#" },
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/tGZaUDvndzM" },
+                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/t9ykjAPPAn8" } // <-- CGC #2 ditambahkan
+                    // { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "#" }, // Dikomentari karena tidak ada
                     // { title: "CGC#4: Coaching Group Clinic 4", youtube_url: "#" }
                 ]
             }

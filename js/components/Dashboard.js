@@ -3,7 +3,7 @@ import { getWeekData } from '../../data/weekData.js';
 import { courseAttendanceService } from '../config/supabase.js';
 
 class Dashboard {
-    static unlockedWeek = 9; // Hanya week 1 yang terbuka
+    static unlockedWeek = 11; // Hanya week 1 yang terbuka
 
     static async render() {
         const progress = await courseAttendanceService.getUserCourseProgress();

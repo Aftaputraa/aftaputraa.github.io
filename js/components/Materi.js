@@ -3,7 +3,7 @@ import Auth from '../auth.js';
 import { supabase } from '../config/supabase.js';
 
 class Materi {
-    static currentWeek = 11;
+    static currentWeek = 12;
     static currentCourseIndex = 0;
     static currentVideoIndex = 0;
     static auth = new Auth();

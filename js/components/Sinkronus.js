@@ -1,29 +1,27 @@
 import { sessionAttendanceService } from '../config/supabase.js';
 
 class Sinkronus {
-    static currentTab = 'onboarding_3';  // Diubah ke angkatan 3
+    static currentTab = 'onboarding_4';  // Diubah ke angkatan 4
     static currentVideoIndex = 0;
     static isInitialized = false;
     
     // Flag untuk menampilkan overlay (ubah ke false untuk menampilkan konten)
     static showComingSoonOverlay = false; // <-- UBAH KE FALSE: Overlay dimatikan, konten aktif
 
-    // Data sessions untuk Angkatan 3 (sudah diisi dengan video yang diberikan)
+    // Data sessions untuk Angkatan 4 (sudah diisi dengan video yang diberikan)
     static getSessionsData() {
         return {
-            onboarding_3: {
-                title: "Onboarding Kampus Riset Batch 3",
+            onboarding_4: {
+                title: "Onboarding Kampus Riset Batch 4",
                 videos: [
-                    { title: "Onboarding Kampus Riset Batch 3", youtube_url: "https://www.youtube.com/embed/LF7YivLUpPM" } // Ganti # dengan embed URL
+                    { title: "Onboarding Kampus Riset Batch 4", youtube_url: "https://www.youtube.com/embed/AIAJh25-nWk" } // Ganti # dengan embed URL
                 ]
             },
             coaching_clinic: {
                 title: "Coaching Group Clinic",
                 videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/tGZaUDvndzM" },
-                    { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/t9ykjAPPAn8" } // <-- CGC #2 ditambahkan
-                    // { title: "CGC#3: Coaching Group Clinic 3", youtube_url: "#" }, // Dikomentari karena tidak ada
-                    // { title: "CGC#4: Coaching Group Clinic 4", youtube_url: "#" }
+                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/IPh_7mUw2Ig" }
+                    // { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/t9ykjAPPAn8" } // Dikomentari karena hanya CGC 1
                 ]
             }
         };
@@ -39,15 +37,15 @@ class Sinkronus {
                 <div class="bg-white shadow-lg rounded-xl md:rounded-2xl overflow-hidden">
                     <div class="p-4 md:p-6 border-b border-gray-200">
                         <h1 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">Rekaman Sesi Sinkronus</h1>
-                        <p class="text-gray-600 mt-1 text-sm md:text-base">Rekaman sesi live dan coaching clinic - Angkatan 3</p>
+                        <p class="text-gray-600 mt-1 text-sm md:text-base">Rekaman sesi live dan coaching clinic - Angkatan 4</p>
                     </div>
                     
                     <!-- Tab Navigation -->
                     <div class="border-b border-gray-200 bg-gray-50">
                         <div class="flex overflow-x-auto">
-                            <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'onboarding_3' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
-                                    data-tab="onboarding_3">
-                                Onboarding Batch 3
+                            <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'onboarding_4' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
+                                    data-tab="onboarding_4">
+                                Onboarding Batch 4
                             </button>
                             <button class="tab-button flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 border-transparent hover:bg-white hover:text-blue-600 transition ${this.currentTab === 'coaching_clinic' ? 'bg-white text-blue-600 border-blue-600' : 'text-gray-600'}" 
                                     data-tab="coaching_clinic">
@@ -144,7 +142,7 @@ class Sinkronus {
                             </div>
                             <h2 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 md:mb-3">Coming Soon</h2>
                             <p class="text-sm md:text-base text-gray-600 mb-4 md:mb-6 max-w-md mx-auto px-2">
-                                Sesi sinkronus untuk Angkatan 3 akan segera diumumkan. 
+                                Sesi sinkronus untuk Angkatan 4 akan segera diumumkan. 
                                 Pantau terus halaman ini untuk informasi jadwal terbaru.
                             </p>
                             <div class="inline-flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-1.5 md:px-4 md:py-2">

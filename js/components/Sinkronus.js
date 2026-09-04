@@ -1,27 +1,36 @@
 import { sessionAttendanceService } from '../config/supabase.js';
 
 class Sinkronus {
-    static currentTab = 'onboarding_4';  // Diubah ke angkatan 4
+    static currentTab = 'onboarding_4';
     static currentVideoIndex = 0;
     static isInitialized = false;
     
-    // Flag untuk menampilkan overlay (ubah ke false untuk menampilkan konten)
-    static showComingSoonOverlay = false; // <-- UBAH KE FALSE: Overlay dimatikan, konten aktif
+    // Flag untuk menampilkan overlay (false = konten aktif)
+    static showComingSoonOverlay = false;
 
-    // Data sessions untuk Angkatan 4 (sudah diisi dengan video yang diberikan)
+    // Data sessions untuk Angkatan 4
     static getSessionsData() {
         return {
             onboarding_4: {
                 title: "Onboarding Kampus Riset Batch 4",
                 videos: [
-                    { title: "Onboarding Kampus Riset Batch 4", youtube_url: "https://www.youtube.com/embed/AIAJh25-nWk" } // Ganti # dengan embed URL
+                    { 
+                        title: "Onboarding Kampus Riset Batch 4", 
+                        youtube_url: "https://www.youtube.com/embed/AIAJh25-nWk" 
+                    }
                 ]
             },
             coaching_clinic: {
                 title: "Coaching Group Clinic",
                 videos: [
-                    { title: "CGC#1: Coaching Group Clinic 1", youtube_url: "https://www.youtube.com/embed/IPh_7mUw2Ig" }
-                    // { title: "CGC#2: Coaching Group Clinic 2", youtube_url: "https://www.youtube.com/embed/t9ykjAPPAn8" } // Dikomentari karena hanya CGC 1
+                    { 
+                        title: "CGC#1: Coaching Group Clinic 1", 
+                        youtube_url: "https://www.youtube.com/embed/IPh_7mUw2Ig" 
+                    },
+                    { 
+                        title: "CGC#2: Coaching Group Clinic 2", 
+                        youtube_url: "https://www.youtube.com/embed/lxb4nHRL30o" 
+                    }
                 ]
             }
         };
@@ -55,7 +64,7 @@ class Sinkronus {
                     </div>
                     
                     <div class="p-4 md:p-6">
-                        <!-- Session Info & Attendance -->
+                        <!-- Session Info -->
                         <div class="mb-6 bg-blue-50 rounded-xl p-4 md:p-6 border border-blue-200">
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 <div>
@@ -108,7 +117,7 @@ class Sinkronus {
                                         <h3 id="current-video-title" class="text-lg md:text-xl font-bold text-gray-900 mb-2">${currentVideo.title}</h3>
                                         <p id="current-session-title" class="text-gray-600 mb-4">${currentSession.title}</p>
                                         
-                                        <!-- Simple Navigation -->
+                                        <!-- Navigation -->
                                         <div class="flex gap-3">
                                             <button class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-400 disabled:cursor-not-allowed prev-video"
                                                     ${this.currentVideoIndex === 0 ? 'disabled' : ''}>
@@ -130,7 +139,7 @@ class Sinkronus {
             </div>
         `;
 
-        // Jika overlay aktif, bungkus dengan overlay yang tidak mengganggu layout
+        // Jika overlay aktif
         if (this.showComingSoonOverlay) {
             return `
                 <div class="sinkronus-wrapper" style="position: relative; min-height: 500px;">
@@ -179,10 +188,8 @@ class Sinkronus {
 
     static setupTabNavigation() {
         document.addEventListener('click', (e) => {
-            // Cek apakah klik terjadi di dalam overlay
             const overlay = document.querySelector('.coming-soon-overlay');
             if (overlay) {
-                // Jika overlay ada, cegah interaksi dengan tab
                 const isClickInsideOverlay = overlay.contains(e.target);
                 if (isClickInsideOverlay) {
                     e.preventDefault();
@@ -217,7 +224,6 @@ class Sinkronus {
 
     static setupVideoNavigation() {
         document.addEventListener('click', (e) => {
-            // Cek apakah klik terjadi di dalam overlay
             const overlay = document.querySelector('.coming-soon-overlay');
             if (overlay) {
                 const isClickInsideOverlay = overlay.contains(e.target);
@@ -249,7 +255,6 @@ class Sinkronus {
 
     static setupVideoList() {
         document.addEventListener('click', (e) => {
-            // Cek apakah klik terjadi di dalam overlay
             const overlay = document.querySelector('.coming-soon-overlay');
             if (overlay) {
                 const isClickInsideOverlay = overlay.contains(e.target);
@@ -274,7 +279,6 @@ class Sinkronus {
 
     static setupAttendance() {
         document.addEventListener('click', async (e) => {
-            // Cek apakah klik terjadi di dalam overlay
             const overlay = document.querySelector('.coming-soon-overlay');
             if (overlay) {
                 const isClickInsideOverlay = overlay.contains(e.target);
